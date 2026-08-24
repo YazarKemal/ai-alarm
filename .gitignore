@@ -1,0 +1,24 @@
+# Gradle
+.gradle/
+build/
+app/build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+local.properties
+
+# Generated
+*.apk
+*.aab
+*.dex
+output.json
+
+# OS
+.DS_Store
+
+# Logs
+*.log
