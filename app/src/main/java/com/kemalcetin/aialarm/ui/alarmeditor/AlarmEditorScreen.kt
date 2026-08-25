@@ -164,8 +164,15 @@ fun AlarmEditorScreen(
             AiNaturalLanguageCard(
                 expanded = aiExpanded,
                 input = aiInput,
-                onToggle = { aiExpanded = !aiExpanded },
-                onInputChange = { aiInput = it },
+                clarification = uiState.clarification,
+                onToggle = {
+                    aiExpanded = !aiExpanded
+                    viewModel.dismissClarification()
+                },
+                onInputChange = {
+                    aiInput = it
+                    viewModel.dismissClarification()
+                },
                 onApply = {
                     viewModel.applyNaturalLanguage(aiInput)
                     aiExpanded = false
@@ -353,6 +360,7 @@ private fun TimeHeroCard(
 private fun AiNaturalLanguageCard(
     expanded: Boolean,
     input: String,
+    clarification: String?,
     onToggle: () -> Unit,
     onInputChange: (String) -> Unit,
     onApply: () -> Unit
@@ -415,6 +423,17 @@ private fun AiNaturalLanguageCard(
                     .padding(horizontal = PhSpacing.md),
                 shape = RoundedCornerShape(PhRadius.button)
             )
+            if (clarification != null) {
+                Spacer(Modifier.height(PhSpacing.sm))
+                Text(
+                    text = clarification,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = PhSpacing.md),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
             Spacer(Modifier.height(PhSpacing.sm))
             PhPrimaryButton(
                 text = stringResource(R.string.apply_to_alarm),

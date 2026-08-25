@@ -18,7 +18,9 @@ import com.kemalcetin.aialarm.feature.assistant.AiWatchdogScheduler
 import com.kemalcetin.aialarm.feature.assistant.data.AlarmEventRepository
 import com.kemalcetin.aialarm.feature.assistant.data.AlarmEventRepositoryImpl
 import com.kemalcetin.aialarm.feature.assistant.engine.AiAlarmEngine
+import com.kemalcetin.aialarm.feature.assistant.network.AiAlarmInterpreter
 import com.kemalcetin.aialarm.feature.assistant.network.AiInsightsProvider
+import com.kemalcetin.aialarm.feature.assistant.network.PromptHavenAiAlarmInterpreter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -75,6 +77,11 @@ class AppContainer(private val context: Context) {
     }
 
     val aiInsightsProvider: AiInsightsProvider? = null
+
+    /** Server-side PromptHaven AI proxy client. No provider secret on device. */
+    val aiAlarmInterpreter: AiAlarmInterpreter by lazy {
+        PromptHavenAiAlarmInterpreter()
+    }
 
     val aiAlarmEngine: AiAlarmEngine by lazy {
         AiAlarmEngine(

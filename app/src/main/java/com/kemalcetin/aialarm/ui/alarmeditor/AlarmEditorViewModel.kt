@@ -10,6 +10,8 @@ import com.kemalcetin.aialarm.data.prefs.AppPreferences
 import com.kemalcetin.aialarm.di.AppContainer
 import com.kemalcetin.aialarm.domain.model.Alarm
 import com.kemalcetin.aialarm.domain.repository.AlarmRepository
+import com.kemalcetin.aialarm.feature.assistant.network.AiAlarmInterpreter
+import com.kemalcetin.aialarm.feature.assistant.network.AlarmInterpretResult
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -29,13 +31,15 @@ data class AlarmEditorUiState(
     val label: String = "Alarm",
     val repeatDays: Set<DayOfWeek> = emptySet(),
     val vibrate: Boolean = true,
-    val snoozeMinutes: Int = 5
+    val snoozeMinutes: Int = 5,
+    val clarification: String? = null
 )
 
 class AlarmEditorViewModel(
     private val repository: AlarmRepository,
     private val scheduler: AlarmScheduler,
     private val preferences: AppPreferences,
+    private val interpreter: AiAlarmInterpreter,
     private val alarmId: Long,
     private val prefillHour: Int? = null,
     private val prefillMinute: Int? = null,
@@ -92,17 +96,47 @@ class AlarmEditorViewModel(
 
     /**
      * Applies a natural-language description to the editor fields ONLY.
-     * Never schedules. This is the offline fallback for the AI assistant
-     * (Phase 5 upgrades this to the PromptHaven AI proxy). Manual editing
+     * Never schedules. Tries the server-side PromptHaven AI proxy first and
+     * falls back to the offline parser when the backend is unreachable or
+     * unconfigured, so this always works without network/AI. Manual editing
      * and SAVE remain the only way an alarm is ever scheduled.
      */
     fun applyNaturalLanguage(text: String) {
+        val trimmed = text.trim()
+        if (trimmed.isBlank()) return
+        viewModelScope.launch {
+            val result = interpreter.interpret(trimmed)
+            when (result) {
+                is AlarmInterpretResult.Alarm -> {
+                    _uiState.update {
+                        it.copy(
+                            hour = result.hour,
+                            minute = result.minute,
+                            repeatDays = result.repeatDays,
+                            clarification = null
+                        )
+                    }
+                }
+                is AlarmInterpretResult.NeedsClarification -> {
+                    _uiState.update { it.copy(clarification = result.message) }
+                }
+                is AlarmInterpretResult.Failed -> {
+                    applyOffline(trimmed)
+                }
+            }
+        }
+    }
+
+    fun dismissClarification() = _uiState.update { it.copy(clarification = null) }
+
+    private fun applyOffline(text: String) {
         val parsed = NaturalLanguageParser.parse(text) ?: return
         _uiState.update {
             it.copy(
                 hour = parsed.hour,
                 minute = parsed.minute,
-                repeatDays = parsed.repeatDays
+                repeatDays = parsed.repeatDays,
+                clarification = null
             )
         }
     }
@@ -175,6 +209,7 @@ class AlarmEditorViewModel(
                         repository = container.alarmRepository,
                         scheduler = container.alarmScheduler,
                         preferences = container.appPreferences,
+                        interpreter = container.aiAlarmInterpreter,
                         alarmId = alarmId,
                         prefillHour = prefillHour,
                         prefillMinute = prefillMinute,
