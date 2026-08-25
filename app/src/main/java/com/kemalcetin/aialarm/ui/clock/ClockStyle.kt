@@ -1,15 +1,18 @@
 package com.kemalcetin.aialarm.ui.clock
 
+import androidx.annotation.StringRes
+import com.kemalcetin.aialarm.R
+
 /**
  * Selectable clock faces. Presentation only — never affects alarm scheduling.
  */
-enum class ClockStyle(val label: String) {
-    DIGITAL_MINIMAL("Digital Minimal"),
-    DIGITAL_BOLD("Digital Bold"),
-    DIGITAL_NIGHT("Digital Night"),
-    ANALOG_CLASSIC("Analog Classic"),
-    ANALOG_MINIMAL("Analog Minimal"),
-    ANALOG_GOLD("Analog Gold");
+enum class ClockStyle(@StringRes val labelRes: Int) {
+    DIGITAL_MINIMAL(R.string.clock_style_digital_minimal),
+    DIGITAL_BOLD(R.string.clock_style_digital_bold),
+    DIGITAL_NIGHT(R.string.clock_style_digital_night),
+    ANALOG_CLASSIC(R.string.clock_style_analog_classic),
+    ANALOG_MINIMAL(R.string.clock_style_analog_minimal),
+    ANALOG_GOLD(R.string.clock_style_analog_gold);
 
     val isDigital: Boolean
         get() = name.startsWith("DIGITAL")

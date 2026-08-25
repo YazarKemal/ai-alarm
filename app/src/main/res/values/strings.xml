@@ -27,6 +27,12 @@
 
     <!-- Clock -->
     <string name="clock_style_title">Clock Style</string>
+    <string name="clock_style_digital_minimal">Digital Minimal</string>
+    <string name="clock_style_digital_bold">Digital Bold</string>
+    <string name="clock_style_digital_night">Digital Night</string>
+    <string name="clock_style_analog_classic">Analog Classic</string>
+    <string name="clock_style_analog_minimal">Analog Minimal</string>
+    <string name="clock_style_analog_gold">Analog Gold</string>
 
     <!-- Editor -->
     <string name="new_alarm">New Alarm</string>

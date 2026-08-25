@@ -27,6 +27,12 @@
 
     <!-- Clock -->
     <string name="clock_style_title">Saat Stili</string>
+    <string name="clock_style_digital_minimal">Dijital Sade</string>
+    <string name="clock_style_digital_bold">Dijital Kalın</string>
+    <string name="clock_style_digital_night">Dijital Gece</string>
+    <string name="clock_style_analog_classic">Analog Klasik</string>
+    <string name="clock_style_analog_minimal">Analog Sade</string>
+    <string name="clock_style_analog_gold">Analog Altın</string>
 
     <!-- Editor -->
     <string name="new_alarm">Yeni Alarm</string>

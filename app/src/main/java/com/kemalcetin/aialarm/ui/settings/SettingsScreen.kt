@@ -1,6 +1,7 @@
 package com.kemalcetin.aialarm.ui.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,7 +47,8 @@ private val snoozeOptions = listOf(5, 10, 15)
 @Composable
 fun SettingsScreen(
     container: AppContainer,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenClockStyle: () -> Unit
 ) {
     val viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.factory(container))
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -93,6 +95,40 @@ fun SettingsScreen(
                             shape = RoundedCornerShape(10.dp)
                         )
                     }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clickable(onClick = onOpenClockStyle),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 20.dp)
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            text = "Saat Stili",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    Text(
+                        text = "6 seçenek",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
 

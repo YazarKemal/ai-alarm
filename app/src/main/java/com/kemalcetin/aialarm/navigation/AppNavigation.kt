@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.kemalcetin.aialarm.di.AppContainer
 import com.kemalcetin.aialarm.ui.alarmeditor.AlarmEditorScreen
+import com.kemalcetin.aialarm.ui.clock.ClockStyleScreen
 import com.kemalcetin.aialarm.ui.home.HomeScreen
 import com.kemalcetin.aialarm.ui.settings.SettingsScreen
 import java.time.DayOfWeek
@@ -15,6 +16,7 @@ import java.time.DayOfWeek
 object Routes {
     const val HOME = "home"
     const val SETTINGS = "settings"
+    const val CLOCK_STYLE = "clock_style"
     const val EDITOR = "editor"
     const val EDITOR_ARG_ALARM_ID = "alarmId"
     const val EDITOR_ARG_HOUR = "suggestHour"
@@ -53,6 +55,14 @@ fun AppNavigation(container: AppContainer) {
 
         composable(Routes.SETTINGS) {
             SettingsScreen(
+                container = container,
+                onBack = { navController.popBackStack() },
+                onOpenClockStyle = { navController.navigate(Routes.CLOCK_STYLE) }
+            )
+        }
+
+        composable(Routes.CLOCK_STYLE) {
+            ClockStyleScreen(
                 container = container,
                 onBack = { navController.popBackStack() }
             )
