@@ -166,6 +166,8 @@ private fun ClockCard(
     clock: com.kemalcetin.aialarm.ui.clock.ClockStyle,
     nextAlarm: ZonedDateTime?
 ) {
+    val todayText = stringResource(R.string.today)
+    val tomorrowText = stringResource(R.string.tomorrow)
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -182,7 +184,7 @@ private fun ClockCard(
             ClockWidget(
                 style = clock,
                 contentColor = MaterialTheme.colorScheme.onSurface,
-                nextAlarmText = nextAlarm?.let { nextAlarmSummary(it) }
+                nextAlarmText = nextAlarm?.let { nextAlarmSummary(it, todayText, tomorrowText) }
             )
         }
     }
@@ -196,18 +198,18 @@ private fun PermissionBanners(
     onOpenFullScreenSettings: () -> Unit
 ) {
     if (!permissions.notificationsGranted) {
-        PermissionBanner("Notifications are off; full-screen alerts may not show.") {
-            TextButton(onClick = onRequestNotifications) { Text("Allow") }
+        PermissionBanner(stringResource(R.string.notification_banner)) {
+            TextButton(onClick = onRequestNotifications) { Text(stringResource(R.string.allow)) }
         }
     }
     if (!permissions.canScheduleExact) {
-        PermissionBanner("Exact alarm access is needed for reliable alarms.") {
-            TextButton(onClick = onOpenExactAlarmSettings) { Text("Settings") }
+        PermissionBanner(stringResource(R.string.exact_alarm_banner)) {
+            TextButton(onClick = onOpenExactAlarmSettings) { Text(stringResource(R.string.open_settings)) }
         }
     }
     if (!permissions.fullScreenAvailable) {
-        PermissionBanner("Full-screen alarm access is off.") {
-            TextButton(onClick = onOpenFullScreenSettings) { Text("Settings") }
+        PermissionBanner(stringResource(R.string.fullscreen_banner)) {
+            TextButton(onClick = onOpenFullScreenSettings) { Text(stringResource(R.string.open_settings)) }
         }
     }
 }
@@ -257,30 +259,30 @@ private fun EmptyAlarms(onAddAlarm: () -> Unit) {
             )
             Spacer(Modifier.height(PhSpacing.lg))
             Text(
-                text = "No alarms yet",
+                text = stringResource(R.string.no_alarm_yet),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(Modifier.height(PhSpacing.xs))
             Text(
-                text = "Tap + to add an alarm.",
+                text = stringResource(R.string.no_alarm_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                 textAlign = TextAlign.Center
             )
             Spacer(Modifier.height(PhSpacing.sm))
             TextButton(onClick = onAddAlarm) {
-                Text("Add Alarm", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.add_alarm), fontWeight = FontWeight.SemiBold)
             }
         }
     }
 }
 
-private fun nextAlarmSummary(next: ZonedDateTime): String {
+private fun nextAlarmSummary(next: ZonedDateTime, todayText: String, tomorrowText: String): String {
     val today = ZonedDateTime.now().toLocalDate()
     val label = when (next.toLocalDate()) {
-        today -> "Today"
-        today.plusDays(1) -> "Tomorrow"
+        today -> todayText
+        today.plusDays(1) -> tomorrowText
         else -> "${next.monthValue}/${next.dayOfMonth}"
     }
     return "$label · ${formatTime(next.hour, next.minute)}"

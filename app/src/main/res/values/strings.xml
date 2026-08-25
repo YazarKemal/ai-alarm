@@ -19,6 +19,12 @@
     <string name="settings_desc">Settings</string>
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
+    <string name="add_alarm">Add Alarm</string>
+    <string name="notification_banner">Notifications are off; full-screen alerts may not show.</string>
+    <string name="exact_alarm_banner">Exact alarm access is needed for reliable alarms.</string>
+    <string name="fullscreen_banner">Full-screen alarm access is off.</string>
+    <string name="allow">Allow</string>
+    <string name="open_settings">Settings</string>
 
     <!-- AI suggestion -->
     <string name="ph_ai_name">PromptHaven AI</string>
@@ -54,6 +60,8 @@
     <string name="apply_to_alarm">APPLY TO ALARM</string>
     <string name="ready_to_apply">Ready to apply</string>
     <string name="time_tap_hint">Tap the time to change it</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 
     <!-- Ringing -->
     <string name="snooze_action">SNOOZE 10 MINUTES</string>

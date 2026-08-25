@@ -291,10 +291,10 @@ fun AlarmEditorScreen(
                     viewModel.setHour(timePickerState.hour)
                     viewModel.setMinute(timePickerState.minute)
                     showTimePicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.cancel)) }
             },
             text = { TimePicker(state = timePickerState) }
         )
@@ -341,7 +341,7 @@ private fun TimeHeroCard(
                 )
             } else {
                 Text(
-                    text = "One time",
+                    text = stringResource(R.string.one_time),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.92f)
                 )

@@ -33,10 +33,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kemalcetin.aialarm.R
 import com.kemalcetin.aialarm.di.AppContainer
 import com.kemalcetin.aialarm.ui.common.formatTime
 import com.kemalcetin.aialarm.ui.theme.PhRadius
@@ -117,7 +119,7 @@ fun AlarmRingingScreen(
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = label.ifBlank { "Alarm" },
+                text = label.ifBlank { stringResource(R.string.alarm_default_label) },
                 style = MaterialTheme.typography.headlineMedium,
                 color = GOLD,
                 fontWeight = FontWeight.SemiBold
@@ -146,7 +148,7 @@ fun AlarmRingingScreen(
                     contentColor = ON_GOLD
                 )
             ) {
-                Text("SNOOZE 10 MINUTES", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.snooze_action), fontWeight = FontWeight.Bold)
             }
 
             Spacer(Modifier.height(PhSpacing.md))
@@ -183,7 +185,7 @@ fun AlarmRingingScreen(
                         trackColor = GOLD.copy(alpha = 0.15f)
                     )
                     Text(
-                        text = "HOLD TO DISMISS",
+                        text = stringResource(R.string.hold_to_dismiss),
                         color = GOLD,
                         fontWeight = FontWeight.SemiBold
                     )

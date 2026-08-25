@@ -19,6 +19,12 @@
     <string name="settings_desc">Ayarlar</string>
     <string name="today">Bugün</string>
     <string name="tomorrow">Yarın</string>
+    <string name="add_alarm">Alarm Ekle</string>
+    <string name="notification_banner">Bildirimler kapalı; tam ekran uyarıları gösterilemeyebilir.</string>
+    <string name="exact_alarm_banner">Güvenilir alarmlar için tam zaman erişimi gerekli.</string>
+    <string name="fullscreen_banner">Tam ekran alarm erişimi kapalı.</string>
+    <string name="allow">İzin Ver</string>
+    <string name="open_settings">Ayarlar</string>
 
     <!-- AI suggestion -->
     <string name="ph_ai_name">PromptHaven AI</string>
@@ -54,6 +60,8 @@
     <string name="apply_to_alarm">ALARMA UYGULA</string>
     <string name="ready_to_apply">Uygulanmaya hazır</string>
     <string name="time_tap_hint">Zamanı değiştirmek için dokun</string>
+    <string name="ok">Tamam</string>
+    <string name="cancel">İptal</string>
 
     <!-- Ringing -->
     <string name="snooze_action">ERTELE 10 DAKİKA</string>

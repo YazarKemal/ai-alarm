@@ -34,8 +34,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.kemalcetin.aialarm.R
 import com.kemalcetin.aialarm.domain.model.Alarm
 import com.kemalcetin.aialarm.ui.common.formatRepeatDays
 import com.kemalcetin.aialarm.ui.common.formatTime
@@ -93,7 +95,7 @@ fun PhTopBar(
         IconButton(onClick = onSettings) {
             Icon(
                 Icons.Outlined.Settings,
-                contentDescription = "Settings",
+                contentDescription = stringResource(R.string.settings_desc),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -132,13 +134,13 @@ fun PhAlarmCard(
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    text = alarm.label.ifBlank { "Alarm" },
+                    text = alarm.label.ifBlank { stringResource(R.string.alarm_default_label) },
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = emphasis)
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    text = if (alarm.isOneTime) "One time" else formatRepeatDays(alarm.repeatDays),
+                    text = if (alarm.isOneTime) stringResource(R.string.one_time) else formatRepeatDays(alarm.repeatDays),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = emphasis)
                 )
@@ -276,7 +278,7 @@ fun PhAiSuggestionCard(
                 }
                 Spacer(Modifier.width(PhSpacing.md))
                 Text(
-                    text = "PromptHaven AI",
+                    text = stringResource(R.string.ph_ai_name),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -296,7 +298,7 @@ fun PhAiSuggestionCard(
                 TextButton(onClick = onIgnore) {
                     Icon(Icons.Outlined.Close, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(PhSpacing.xs))
-                    Text("IGNORE")
+                    Text(stringResource(R.string.ignore))
                 }
                 Spacer(Modifier.weight(1f))
                 Button(
@@ -306,7 +308,7 @@ fun PhAiSuggestionCard(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
-                    Text("SET ALARM", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.set_alarm), fontWeight = FontWeight.Bold)
                 }
             }
         }
