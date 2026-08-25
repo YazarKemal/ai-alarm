@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AI Alarm</string>
-    <string name="alarm_ringing_channel_name">Alarm</string>
-    <string name="alarm_ringing_channel_description">Active alarm ringing notification</string>
+    <string name="app_name">PromptHaven Alarm</string>
+    <string name="alarm_ringing_channel_name">PromptHaven Alarm</string>
+    <string name="alarm_ringing_channel_description">Aktif alarm bildirimi</string>
     <string name="alarm_default_label">Alarm</string>
-    <string name="alarm_ringing">Alarm ringing</string>
-    <string name="snooze">Snooze</string>
-    <string name="dismiss">Dismiss</string>
+    <string name="alarm_ringing">Alarm çalıyor</string>
+    <string name="snooze">Ertele</string>
+    <string name="dismiss">Kapat</string>
 </resources>
