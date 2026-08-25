@@ -5,6 +5,16 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// The Google Services plugin generates FirebaseApp default options from a
+// google-services.json placed at this module's root. It is applied ONLY when
+// that file exists, so local development without Firebase project config keeps
+// building. To enable Firebase App Check, add the file from the Firebase Console
+// (steps in functions/README.md). Without it, Firebase App Check is skipped and
+// the AI proxy degrades to the offline workflow.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.kemalcetin.aialarm"
     compileSdk = 36
@@ -21,12 +31,21 @@ android {
 
     buildTypes {
         debug {
-            // Non-secret, build-time configurable backend base URL. Debug points
-            // at the local Firebase emulator by default; override with the
-            // PROMPTHAVEN_FUNCTIONS_DEBUG_URL Gradle property if you need a
-            // different emulator/project. The URL is public, never a secret.
-            val debugUrl = providers.gradleProperty("PROMPTHAVEN_FUNCTIONS_DEBUG_URL")
-                .getOrElse("http://10.0.2.2:5001")
+            // Non-secret, build-time configurable backend base URL. The local
+            // Firebase Functions emulator serves at
+            //   http://10.0.2.2:5001/<PROJECT_ID>/us-central1
+            // from the Android emulator's perspective (10.0.2.2 == host localhost).
+            // Set the Gradle property PROMPTHAVEN_FIREBASE_PROJECT_ID (recommended),
+            // or override the whole URL with PROMPTHAVEN_FUNCTIONS_DEBUG_URL.
+            // A blank/unconfigured value leaves AI "not configured" so nothing is
+            // sent to an invalid URL.
+            val overrideUrl = providers.gradleProperty("PROMPTHAVEN_FUNCTIONS_DEBUG_URL").getOrElse("")
+            val projectId = providers.gradleProperty("PROMPTHAVEN_FIREBASE_PROJECT_ID").getOrElse("")
+            val debugUrl = when {
+                overrideUrl.isNotBlank() -> overrideUrl
+                projectId.isNotBlank() -> "http://10.0.2.2:5001/$projectId/us-central1"
+                else -> ""
+            }
             buildConfigField("String", "PROMPTHAVEN_FUNCTIONS_BASE_URL", "\"$debugUrl\"")
         }
         release {
@@ -83,6 +102,14 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.okhttp)
+
+    // Firebase App Check (Play Integrity provider). The BOM pins versions. No
+    // Firebase Auth — alarm interpretation must not require login. These deps
+    // compile even without google-services.json; Firebase simply isn't
+    // initialized locally, so App Check is skipped and AI degrades to offline.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.appcheck)
+    implementation(libs.firebase.appcheck.playintegrity)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

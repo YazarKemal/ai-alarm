@@ -55,7 +55,8 @@ class PromptHavenAiAlarmInterpreter(
     private val client: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)
-        .build()
+        .build(),
+    private val tokenProvider: AppCheckTokenProvider? = null
 ) : AiAlarmInterpreter {
 
     override suspend fun interpret(text: String): AlarmInterpretResult =
@@ -67,12 +68,14 @@ class PromptHavenAiAlarmInterpreter(
                 if (baseUrl.isBlank()) {
                     return@withContext AlarmInterpretResult.Failed("AI proxy not configured")
                 }
-                val body = buildRequestBody(text).toRequestBody(JSON_MEDIA_TYPE)
+                val body = buildRequestBody(text)
 
-                val request = Request.Builder()
-                    .url("$baseUrl/interpretAlarmRequest")
-                    .post(body)
-                    .build()
+                // Attach a real Firebase App Check token when available. When the
+                // token is unavailable (not configured / Play Integrity fails) we
+                // send without it; an enforcing backend rejects and the app falls
+                // back to the offline workflow. We never fabricate a token.
+                val appCheckToken = tokenProvider?.getToken()
+                val request = buildRequest("$baseUrl/interpretAlarmRequest", body, appCheckToken)
 
                 client.newCall(request).execute().use { response ->
                     if (!response.isSuccessful) {
@@ -85,6 +88,21 @@ class PromptHavenAiAlarmInterpreter(
                 AlarmInterpretResult.Failed(e.message ?: "Network error")
             }
         }
+
+    /**
+     * Builds the HTTP request. If [appCheckToken] is non-null the Firebase App
+     * Check token is attached as the `x-firebase-app-check` header; otherwise
+     * no such header is added. This never adds an Authorization/provider header.
+     */
+    internal fun buildRequest(url: String, body: String, appCheckToken: String?): Request {
+        val builder = Request.Builder()
+            .url(url)
+            .post(body.toRequestBody(JSON_MEDIA_TYPE))
+        if (appCheckToken != null) {
+            builder.addHeader(APP_CHECK_HEADER, appCheckToken)
+        }
+        return builder.build()
+    }
 
     /**
      * Builds the request body sent to the backend. The backend is the only
@@ -176,5 +194,8 @@ class PromptHavenAiAlarmInterpreter(
         private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
         private const val MAX_TEXT_LENGTH = 500
         private const val MAX_LABEL_LENGTH = 80
+
+        /** Header carrying the Firebase App Check token (matches the backend). */
+        const val APP_CHECK_HEADER = "x-firebase-app-check"
     }
 }

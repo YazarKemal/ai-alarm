@@ -2,6 +2,7 @@ package com.kemalcetin.aialarm.feature.assistant.network
 
 import java.time.DayOfWeek
 import java.time.LocalDate
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -136,5 +137,54 @@ class PromptHavenAiAlarmInterpreterTest {
         assertTrue(body.contains("\"locale\":\"tr-TR\""))
         assertTrue(body.contains("\"currentDateTime\":\"2026-08-25T06:00:00+03:00\""))
         assertFalse(body.contains("prompt"))
+    }
+
+    // ---- App Check header / token integration ----
+
+    @Test
+    fun `request attaches app check header when token present`() {
+        val req = interpreter.buildRequest("http://x/interpretAlarmRequest", "{}", "appcheck-tok-123")
+        assertEquals("appcheck-tok-123", req.header(PromptHavenAiAlarmInterpreter.APP_CHECK_HEADER))
+    }
+
+    @Test
+    fun `request omits app check header when token unavailable`() {
+        val req = interpreter.buildRequest("http://x/interpretAlarmRequest", "{}", null)
+        assertNull(req.header(PromptHavenAiAlarmInterpreter.APP_CHECK_HEADER))
+    }
+
+    @Test
+    fun `request never carries a provider authorization header`() {
+        // Guards the security invariant: no AI provider secret on the device/APK.
+        val req = interpreter.buildRequest("http://x/interpretAlarmRequest", "{}", "appcheck-tok")
+        assertNull(req.header("Authorization"))
+        assertNull(req.header("authorization"))
+    }
+
+    @Test
+    fun `blank base url fails gracefully as not configured`() = runBlocking {
+        val unconfigured = PromptHavenAiAlarmInterpreter(baseUrl = "")
+        val result = unconfigured.interpret("wake me at 7")
+        assertTrue(result is AlarmInterpretResult.Failed)
+    }
+
+    @Test
+    fun `token acquisition throwing degrades to a failed interpretation`() = runBlocking {
+        val throwingProvider = AppCheckTokenProvider { throw IllegalStateException("no firebase") }
+        val interpreterWithBadToken = PromptHavenAiAlarmInterpreter(
+            baseUrl = "http://example.test",
+            tokenProvider = throwingProvider
+        )
+        // getToken() throws inside the try, which is caught -> Failed (no network hit).
+        val result = interpreterWithBadToken.interpret("wake me at 7")
+        assertTrue(result is AlarmInterpretResult.Failed)
+    }
+
+    @Test
+    fun `firebase app check provider returns null when firebase unavailable`() = runBlocking {
+        val provider = FirebaseAppCheckTokenProvider(
+            appCheckProvider = { throw IllegalStateException("no default FirebaseApp") }
+        )
+        assertNull(provider.getToken())
     }
 }

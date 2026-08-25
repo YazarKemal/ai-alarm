@@ -21,6 +21,8 @@ import com.kemalcetin.aialarm.feature.assistant.data.AlarmEventRepositoryImpl
 import com.kemalcetin.aialarm.feature.assistant.engine.AiAlarmEngine
 import com.kemalcetin.aialarm.feature.assistant.network.AiAlarmInterpreter
 import com.kemalcetin.aialarm.feature.assistant.network.AiInsightsProvider
+import com.kemalcetin.aialarm.feature.assistant.network.AppCheckTokenProvider
+import com.kemalcetin.aialarm.feature.assistant.network.FirebaseAppCheckTokenProvider
 import com.kemalcetin.aialarm.feature.assistant.network.PromptHavenAiAlarmInterpreter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -86,9 +88,14 @@ class AppContainer(private val context: Context) {
 
     val aiInsightsProvider: AiInsightsProvider? = null
 
+    /** Supplies the Firebase App Check token for AI-proxy requests. */
+    val appCheckTokenProvider: AppCheckTokenProvider by lazy {
+        FirebaseAppCheckTokenProvider()
+    }
+
     /** Server-side PromptHaven AI proxy client. No provider secret on device. */
     val aiAlarmInterpreter: AiAlarmInterpreter by lazy {
-        PromptHavenAiAlarmInterpreter()
+        PromptHavenAiAlarmInterpreter(tokenProvider = appCheckTokenProvider)
     }
 
     val aiAlarmEngine: AiAlarmEngine by lazy {
