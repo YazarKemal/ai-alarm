@@ -44,6 +44,7 @@
     <string name="vibration">Titreşim</string>
     <string name="vibration_subtitle">Zil ile birlikte titre</string>
     <string name="snooze_duration">Erteleme</string>
+    <string name="snooze_minutes">dk</string>
     <string name="more_options">Diğer seçenekler</string>
     <string name="save_alarm">ALARMI KAYDET</string>
     <string name="delete_alarm">Alarmı Sil</string>

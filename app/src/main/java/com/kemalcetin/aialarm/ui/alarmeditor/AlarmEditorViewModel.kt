@@ -90,6 +90,23 @@ class AlarmEditorViewModel(
     fun setVibrate(vibrate: Boolean) = _uiState.update { it.copy(vibrate = vibrate) }
     fun setSnooze(minutes: Int) = _uiState.update { it.copy(snoozeMinutes = minutes) }
 
+    /**
+     * Applies a natural-language description to the editor fields ONLY.
+     * Never schedules. This is the offline fallback for the AI assistant
+     * (Phase 5 upgrades this to the PromptHaven AI proxy). Manual editing
+     * and SAVE remain the only way an alarm is ever scheduled.
+     */
+    fun applyNaturalLanguage(text: String) {
+        val parsed = NaturalLanguageParser.parse(text) ?: return
+        _uiState.update {
+            it.copy(
+                hour = parsed.hour,
+                minute = parsed.minute,
+                repeatDays = parsed.repeatDays
+            )
+        }
+    }
+
     fun save() {
         val state = _uiState.value
         viewModelScope.launch {

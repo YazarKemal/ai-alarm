@@ -44,6 +44,7 @@
     <string name="vibration">Vibration</string>
     <string name="vibration_subtitle">Vibrate with the alarm</string>
     <string name="snooze_duration">Snooze</string>
+    <string name="snooze_minutes">min</string>
     <string name="more_options">More options</string>
     <string name="save_alarm">SAVE ALARM</string>
     <string name="delete_alarm">Delete Alarm</string>
