@@ -74,6 +74,7 @@
     <string name="smart_suggestions">Smart alarm suggestions</string>
     <string name="smart_suggestions_subtitle">Suggest likely forgotten alarms</string>
     <string name="ai_setup">AI alarm setup</string>
+    <string name="ai_setup_subtitle">Natural-language setup via the PromptHaven AI proxy</string>
     <string name="ai_setup_enabled">Enabled</string>
     <string name="ai_setup_disabled">Setup required</string>
     <string name="alarm_reliability">ALARM RELIABILITY</string>

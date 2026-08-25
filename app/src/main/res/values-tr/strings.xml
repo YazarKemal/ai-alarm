@@ -74,6 +74,7 @@
     <string name="smart_suggestions">Akıllı alarm önerileri</string>
     <string name="smart_suggestions_subtitle">Muhtemel unutulan alarmları öner</string>
     <string name="ai_setup">AI alarm kurulumu</string>
+    <string name="ai_setup_subtitle">PromptHaven AI proxy ile doğal dil kurulumu</string>
     <string name="ai_setup_enabled">Etkin</string>
     <string name="ai_setup_disabled">Kurulum gerekli</string>
     <string name="alarm_reliability">ALARM GÜVENİLİRLİĞİ</string>

@@ -7,6 +7,7 @@ import com.kemalcetin.aialarm.core.alarm.AlarmScheduler
 import com.kemalcetin.aialarm.core.alarm.AndroidAlarmScheduler
 import com.kemalcetin.aialarm.core.alarm.DebugAlarmScheduler
 import com.kemalcetin.aialarm.core.alarm.NextAlarmCalculator
+import com.kemalcetin.aialarm.core.permission.BatteryOptimizationManager
 import com.kemalcetin.aialarm.core.permission.ExactAlarmPermissionManager
 import com.kemalcetin.aialarm.core.permission.FullScreenIntentPermissionManager
 import com.kemalcetin.aialarm.core.permission.NotificationPermissionManager
@@ -36,6 +37,9 @@ class AppContainer(private val context: Context) {
 
     private val applicationContext = context.applicationContext
 
+    /** Public access to the application context for non-lazy consumers. */
+    val appContext: Context get() = applicationContext
+
     val database: AiAlarmDatabase by lazy { AiAlarmDatabase.create(applicationContext) }
 
     val alarmRepository: AlarmRepository by lazy { AlarmRepositoryImpl(database.alarmDao()) }
@@ -48,6 +52,10 @@ class AppContainer(private val context: Context) {
 
     val notificationPermissionManager: NotificationPermissionManager by lazy {
         NotificationPermissionManager(applicationContext)
+    }
+
+    val batteryOptimizationManager: BatteryOptimizationManager by lazy {
+        BatteryOptimizationManager(applicationContext)
     }
 
     val fullScreenIntentPermissionManager: FullScreenIntentPermissionManager by lazy {
