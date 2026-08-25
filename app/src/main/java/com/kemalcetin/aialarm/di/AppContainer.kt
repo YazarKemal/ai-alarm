@@ -1,7 +1,6 @@
 package com.kemalcetin.aialarm.di
 
 import android.content.Context
-import com.kemalcetin.aialarm.BuildConfig
 import com.kemalcetin.aialarm.core.alarm.AlarmController
 import com.kemalcetin.aialarm.core.alarm.AlarmNotificationManager
 import com.kemalcetin.aialarm.core.alarm.AlarmScheduler
@@ -20,14 +19,16 @@ import com.kemalcetin.aialarm.feature.assistant.data.AlarmEventRepository
 import com.kemalcetin.aialarm.feature.assistant.data.AlarmEventRepositoryImpl
 import com.kemalcetin.aialarm.feature.assistant.engine.AiAlarmEngine
 import com.kemalcetin.aialarm.feature.assistant.network.AiInsightsProvider
-import com.kemalcetin.aialarm.feature.assistant.network.DeepSeekInsightsProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
 /**
- * Lightweight application-level dependency container. We can migrate to Hilt
- * later if the application grows; manual injection is sufficient for v0.1.
+ * Lightweight application-level dependency container.
+ *
+ * Remote AI is intentionally disabled in the Android client until PromptHavenAI
+ * exposes a server-side proxy. API provider secrets must never ship inside an APK/AAB.
+ * The alarm intelligence remains functional through the on-device learner.
  */
 class AppContainer(private val context: Context) {
 
@@ -73,11 +74,7 @@ class AppContainer(private val context: Context) {
         AlarmEventRepositoryImpl(database.alarmEventDao())
     }
 
-    val aiInsightsProvider: AiInsightsProvider? by lazy {
-        BuildConfig.DEEPSEEK_API_KEY.takeIf { it.isNotBlank() }?.let {
-            DeepSeekInsightsProvider(it)
-        }
-    }
+    val aiInsightsProvider: AiInsightsProvider? = null
 
     val aiAlarmEngine: AiAlarmEngine by lazy {
         AiAlarmEngine(
