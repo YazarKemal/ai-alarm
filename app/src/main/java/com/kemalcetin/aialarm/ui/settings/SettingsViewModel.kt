@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.kemalcetin.aialarm.core.locale.AppLanguage
+import com.kemalcetin.aialarm.core.locale.AppLanguageManager
 import com.kemalcetin.aialarm.core.permission.BatteryOptimizationManager
 import com.kemalcetin.aialarm.core.permission.ExactAlarmPermissionManager
 import com.kemalcetin.aialarm.core.permission.FullScreenIntentPermissionManager
@@ -27,6 +29,7 @@ data class SettingsUiState(
     val smartSuggestionsEnabled: Boolean = true,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val clockStyle: ClockStyle = AppPreferences.DEFAULT_CLOCK_STYLE,
+    val language: AppLanguage = AppLanguage.default,
     val exactAlarmAllowed: Boolean = true,
     val notificationsGranted: Boolean = true,
     val fullScreenAvailable: Boolean = true,
@@ -36,6 +39,7 @@ data class SettingsUiState(
 
 class SettingsViewModel(
     private val preferences: AppPreferences,
+    private val appLanguageManager: AppLanguageManager,
     private val exactPermission: ExactAlarmPermissionManager,
     private val notificationPermission: NotificationPermissionManager,
     private val fullScreenPermission: FullScreenIntentPermissionManager,
@@ -55,13 +59,15 @@ class SettingsViewModel(
             preferences.defaultSnoozeMinutes,
             preferences.autoCreateEnabled,
             preferences.themeMode,
-            preferences.clockStyle
-        ) { snooze, autoCreate, theme, clock ->
+            preferences.clockStyle,
+            preferences.selectedLanguageTag
+        ) { snooze, autoCreate, theme, clock, languageTag ->
             SettingsUiState(
                 defaultSnoozeMinutes = snooze,
                 smartSuggestionsEnabled = autoCreate,
                 themeMode = theme,
                 clockStyle = clock,
+                language = AppLanguage.resolve(languageTag),
                 exactAlarmAllowed = exactPermission.canScheduleExactAlarms(),
                 notificationsGranted = notificationPermission.isGranted(),
                 fullScreenAvailable = fullScreenPermission.canUseFullScreenIntent(),
@@ -86,11 +92,21 @@ class SettingsViewModel(
         viewModelScope.launch { preferences.setClockStyle(style) }
     }
 
+    /**
+     * Changes the application language. The manager updates the in-memory value
+     * and default Locale synchronously (so an immediate activity recreation shows
+     * the new language) and persists the selection in the background.
+     */
+    fun setLanguage(language: AppLanguage) {
+        appLanguageManager.setLanguage(language)
+    }
+
     companion object {
         fun factory(container: AppContainer): ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 SettingsViewModel(
                     preferences = container.appPreferences,
+                    appLanguageManager = container.appLanguageManager,
                     exactPermission = container.exactAlarmPermissionManager,
                     notificationPermission = container.notificationPermissionManager,
                     fullScreenPermission = container.fullScreenIntentPermissionManager,

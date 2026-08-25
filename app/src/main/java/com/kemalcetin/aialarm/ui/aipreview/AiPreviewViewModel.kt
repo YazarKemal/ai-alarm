@@ -32,7 +32,9 @@ data class AiPreviewResult(
 
 class AiPreviewViewModel(
     private val interpreter: AiAlarmInterpreter,
-    private val text: String
+    private val text: String,
+    /** Localized default label used when the offline parser finds no label. */
+    private val defaultLabel: String
 ) : ViewModel() {
 
     data class UiState(
@@ -71,14 +73,13 @@ class AiPreviewViewModel(
                                     minute = parsed.minute,
                                     date = null,
                                     repeatDays = parsed.repeatDays,
-                                    label = "Alarm"
+                                    label = defaultLabel
                                 )
                             )
                         }
                     } else {
-                        _uiState.update {
-                            it.copy(loading = false, error = "Couldn't understand that request. Try a time like 07:30 and a day.")
-                        }
+                        // Sentinel only: the screen shows the localized message.
+                        _uiState.update { it.copy(loading = false, error = OFFLINE_PARSE_ERROR) }
                     }
                 }
             }
@@ -89,12 +90,18 @@ class AiPreviewViewModel(
         /** Nav back-stack key carrying the applied preview back to the editor. */
         const val AI_PREVIEW_RESULT_KEY = "ai_preview_result"
 
+        /** Sentinel meaning "offline parser failed"; the screen shows the localized text. */
+        private const val OFFLINE_PARSE_ERROR = "offline_parse_error"
+
         fun factory(container: AppContainer, text: String): ViewModelProvider.Factory =
             viewModelFactory {
                 initializer {
                     AiPreviewViewModel(
                         interpreter = container.aiAlarmInterpreter,
-                        text = text
+                        text = text,
+                        defaultLabel = container.appContext.getString(
+                            com.kemalcetin.aialarm.R.string.alarm_default_label
+                        )
                     )
                 }
             }

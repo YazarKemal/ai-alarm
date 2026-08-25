@@ -56,7 +56,13 @@ class PromptHavenAiAlarmInterpreter(
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)
         .build(),
-    private val tokenProvider: AppCheckTokenProvider? = null
+    private val tokenProvider: AppCheckTokenProvider? = null,
+    /**
+     * Supplies the locale sent to the backend so the AI answers in the user's
+     * selected application language. Defaults to the device locale when not
+     * injected (e.g. in unit tests).
+     */
+    private val localeProvider: () -> String = { Locale.getDefault().toLanguageTag() }
 ) : AiAlarmInterpreter {
 
     override suspend fun interpret(text: String): AlarmInterpretResult =
@@ -112,7 +118,7 @@ class PromptHavenAiAlarmInterpreter(
     internal fun buildRequestBody(
         text: String,
         timezone: String = ZoneId.systemDefault().id,
-        locale: String = Locale.getDefault().toLanguageTag(),
+        locale: String = localeProvider(),
         currentDateTime: String = OffsetDateTime.now().toString()
     ): String = JSONObject()
         .put("text", text.take(MAX_TEXT_LENGTH))

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">PromptHaven Alarm</string>
-    <string name="alarm_ringing_channel_name">PromptHaven Alarm</string>
+    <string name="app_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_name">Smart Alarm Clock</string>
     <string name="alarm_ringing_channel_description">Active alarm ringing notification</string>
     <string name="alarm_default_label">Alarm</string>
     <string name="alarm_ringing">Alarm ringing</string>
@@ -9,7 +9,7 @@
     <string name="dismiss">Dismiss</string>
 
     <!-- Home -->
-    <string name="home_title">PromptHaven Alarm</string>
+    <string name="home_title">Smart Alarm Clock</string>
     <string name="next_alarm">Next alarm</string>
     <string name="no_alarm_yet">No alarm yet</string>
     <string name="no_alarm_hint">Tap + to add an alarm.</string>
@@ -97,10 +97,25 @@
     <string name="about">ABOUT</string>
     <string name="privacy">Privacy</string>
     <string name="open_source_licenses">Open-source licenses</string>
-    <string name="ecosystem_footer">Part of the PromptHavenAI ecosystem</string>
+    <string name="ecosystem_footer">Smart Alarm Clock\nby PromptHaven Studio</string>
     <string name="back">Back</string>
     <string name="ai_preview">AI Preview</string>
     <string name="retry">Retry</string>
     <string name="refine_request">Refine request</string>
     <string name="preview">Preview</string>
+
+    <!-- Language -->
+    <string name="language">Language</string>
+    <string name="language_dialog_title">Choose language</string>
+
+    <!-- AI errors -->
+    <string name="ai_parse_error">Couldn\'t understand that request. Try a time like 07:30 and a day.</string>
+
+    <!-- Home AI suggestion -->
+    <string name="ai_suggestion_single">You usually set an alarm at %1$s. No alarm is set for tomorrow.</string>
+    <string name="ai_suggestion_weekdays">You usually set a %1$s alarm on weekdays. No alarm is set for tomorrow.</string>
+    <string name="ai_suggestion_days">You usually set a %1$s alarm on %2$s. No alarm is set for tomorrow.</string>
+
+    <!-- Theme label -->
+    <string name="theme_auto">Auto</string>
 </resources>

@@ -169,7 +169,13 @@ fun PhSwitch(
     )
 }
 
-/** A single day-of-week toggle chip. */
+/**
+ * A single day-of-week toggle chip.
+ *
+ * Callers may pass a responsive modifier (e.g. `Modifier.weight(1f).aspectRatio(1f)`)
+ * so all seven chips share the available width and stay circular on narrow and
+ * landscape screens. The default size applies when no modifier is supplied.
+ */
 @Composable
 fun PhDayChip(
     day: DayOfWeek,
@@ -180,7 +186,7 @@ fun PhDayChip(
     val label = day.getDisplayName(TextStyle.NARROW, Locale.getDefault())
     Surface(
         onClick = onClick,
-        modifier = modifier.size(PhSize.touchTarget),
+        modifier = Modifier.size(PhSize.touchTarget).then(modifier),
         shape = CircleShape,
         color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
         contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant

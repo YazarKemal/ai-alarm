@@ -1,5 +1,7 @@
 package com.kemalcetin.aialarm.ui.settings
 
+import android.app.Activity
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +25,7 @@ import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Snooze
 import androidx.compose.material.icons.outlined.VerifiedUser
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,11 +33,15 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -45,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kemalcetin.aialarm.R
+import com.kemalcetin.aialarm.core.locale.AppLanguage
 import com.kemalcetin.aialarm.di.AppContainer
 import com.kemalcetin.aialarm.ui.components.PhSettingsRow
 import com.kemalcetin.aialarm.ui.components.PhSwitch
@@ -64,6 +72,7 @@ fun SettingsScreen(
     val viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.factory(container))
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    var showLanguageDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -77,7 +86,7 @@ fun SettingsScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.settings_desc))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -102,7 +111,7 @@ fun SettingsScreen(
                 PhSettingsRow(
                     icon = Icons.Outlined.Snooze,
                     title = stringResource(R.string.clock_style_title),
-                    subtitle = uiState.clockStyle.name.lowercase().replace("_", " ").replaceFirstChar { it.uppercase() },
+                    subtitle = stringResource(uiState.clockStyle.labelRes),
                     onClick = onOpenClockStyle
                 ) {
                     Text(stringResource(R.string.status_allowed), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
@@ -111,19 +120,26 @@ fun SettingsScreen(
                 PhSettingsRow(
                     icon = Icons.Outlined.Circle,
                     title = stringResource(R.string.theme),
-                    subtitle = themeSubtitle(uiState.themeMode)
+                    subtitle = stringResource(themeSubtitleRes(uiState.themeMode))
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(PhSpacing.xs)) {
                         ThemeMode.entries.forEach { mode ->
                             FilterChip(
                                 selected = uiState.themeMode == mode,
                                 onClick = { viewModel.setThemeMode(mode) },
-                                label = { Text(themeLabel(mode)) },
+                                label = { Text(stringResource(themeLabelRes(mode))) },
                                 shape = RoundedCornerShape(PhRadius.chip)
                             )
                         }
                     }
                 }
+                DividerLine()
+                PhSettingsRow(
+                    icon = Icons.Outlined.Circle,
+                    title = stringResource(R.string.language),
+                    subtitle = uiState.language.nativeName,
+                    onClick = { showLanguageDialog = true }
+                ) {}
             }
 
             Spacer(Modifier.height(PhSpacing.section))
@@ -290,6 +306,58 @@ fun SettingsScreen(
             Spacer(Modifier.height(PhSpacing.lg))
         }
     }
+
+    if (showLanguageDialog) {
+        LanguagePickerDialog(
+            current = uiState.language,
+            onSelect = { lang ->
+                if (lang != uiState.language) {
+                    viewModel.setLanguage(lang)
+                    // Recreate the single activity so its base context is rewrapped
+                    // with the new locale (immediate, no device-settings required).
+                    (context as? Activity)?.recreate()
+                }
+                showLanguageDialog = false
+            },
+            onDismiss = { showLanguageDialog = false }
+        )
+    }
+}
+
+@Composable
+private fun LanguagePickerDialog(
+    current: AppLanguage,
+    onSelect: (AppLanguage) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {},
+        title = { Text(stringResource(R.string.language_dialog_title)) },
+        text = {
+            Column {
+                AppLanguage.entries.forEach { language ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(language) }
+                            .padding(vertical = PhSpacing.md),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = language == current,
+                            onClick = { onSelect(language) }
+                        )
+                        Spacer(Modifier.width(PhSpacing.md))
+                        Text(
+                            text = language.nativeName,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            }
+        }
+    )
 }
 
 @Composable
@@ -350,14 +418,16 @@ private fun ReliabilityRow(
     }
 }
 
-private fun themeSubtitle(mode: ThemeMode): String = when (mode) {
-    ThemeMode.SYSTEM -> "System default"
-    ThemeMode.LIGHT -> "Light"
-    ThemeMode.DARK -> "Dark"
+@StringRes
+private fun themeSubtitleRes(mode: ThemeMode): Int = when (mode) {
+    ThemeMode.SYSTEM -> R.string.system_default
+    ThemeMode.LIGHT -> R.string.light
+    ThemeMode.DARK -> R.string.dark
 }
 
-private fun themeLabel(mode: ThemeMode): String = when (mode) {
-    ThemeMode.SYSTEM -> "Auto"
-    ThemeMode.LIGHT -> "Light"
-    ThemeMode.DARK -> "Dark"
+@StringRes
+private fun themeLabelRes(mode: ThemeMode): Int = when (mode) {
+    ThemeMode.SYSTEM -> R.string.theme_auto
+    ThemeMode.LIGHT -> R.string.light
+    ThemeMode.DARK -> R.string.dark
 }

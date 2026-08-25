@@ -116,7 +116,7 @@ fun AiPreviewScreen(
                     }
                 }
                 state.error != null -> {
-                    PreviewMessageCard(text = state.error.orEmpty())
+                    PreviewMessageCard(text = stringResource(R.string.ai_parse_error))
                     Spacer(Modifier.height(PhSpacing.lg))
                     OutlinedButton(
                         onClick = viewModel::retry,

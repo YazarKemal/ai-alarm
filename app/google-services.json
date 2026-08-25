@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "798970486770",
+    "project_id": "prompthaven-646fe",
+    "storage_bucket": "prompthaven-646fe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:798970486770:android:159f89fecb4679d9f3956b",
+        "android_client_info": {
+          "package_name": "com.prompthavenai.alarm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "798970486770-0ka87lf43glvt6gj7iousabjoij0airg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwGZjXXE18R4iUEIrUuyWPBL-U81PnPJQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "798970486770-0ka87lf43glvt6gj7iousabjoij0airg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

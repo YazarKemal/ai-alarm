@@ -288,12 +288,13 @@ private fun nextAlarmSummary(next: ZonedDateTime, todayText: String, tomorrowTex
     return "$label · ${formatTime(next.hour, next.minute)}"
 }
 
+@Composable
 private fun suggestionMessage(slot: ExpectedSlot): String {
     val days = slot.repeatDays
-    val whenText = when {
-        days.isEmpty() -> "at ${formatTime(slot.hour, slot.minute)}"
-        days.size >= 5 -> "a ${formatTime(slot.hour, slot.minute)} alarm on weekdays"
-        else -> "a ${formatTime(slot.hour, slot.minute)} alarm on ${formatRepeatDays(days)}"
+    val time = formatTime(slot.hour, slot.minute)
+    return when {
+        days.isEmpty() -> stringResource(R.string.ai_suggestion_single, time)
+        days.size >= 5 -> stringResource(R.string.ai_suggestion_weekdays, time)
+        else -> stringResource(R.string.ai_suggestion_days, time, formatRepeatDays(days))
     }
-    return "You usually use $whenText. No alarm is set for tomorrow."
 }

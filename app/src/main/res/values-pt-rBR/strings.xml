@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_description">Notificação de alarme ativo tocando</string>
+    <string name="alarm_default_label">Alarme</string>
+    <string name="alarm_ringing">Alarme tocando</string>
+    <string name="snooze">Adiar</string>
+    <string name="dismiss">Dispensar</string>
+
+    <!-- Home -->
+    <string name="home_title">Smart Alarm Clock</string>
+    <string name="next_alarm">Próximo alarme</string>
+    <string name="no_alarm_yet">Ainda não há alarmes</string>
+    <string name="no_alarm_hint">Toque em + para adicionar um alarme.</string>
+    <string name="alarms_section">ALARMES</string>
+    <string name="one_time">Uma vez</string>
+    <string name="add_alarm_desc">Adicionar alarme</string>
+    <string name="settings_desc">Configurações</string>
+    <string name="today">Hoje</string>
+    <string name="tomorrow">Amanhã</string>
+    <string name="add_alarm">Adicionar alarme</string>
+    <string name="notification_banner">As notificações estão desativadas; alertas em tela cheia podem não aparecer.</string>
+    <string name="exact_alarm_banner">O acesso a alarme exato é necessário para alarmes confiáveis.</string>
+    <string name="fullscreen_banner">O acesso a alarme em tela cheia está desativado.</string>
+    <string name="allow">Permitir</string>
+    <string name="open_settings">Configurações</string>
+
+    <!-- AI suggestion -->
+    <string name="ph_ai_name">PromptHaven AI</string>
+    <string name="ignore">IGNORAR</string>
+    <string name="set_alarm">DEFINIR ALARME</string>
+
+    <!-- Clock -->
+    <string name="clock_style_title">Estilo do relógio</string>
+    <string name="clock_style_digital_minimal">Digital minimalista</string>
+    <string name="clock_style_digital_bold">Digital em negrito</string>
+    <string name="clock_style_digital_night">Digital noturno</string>
+    <string name="clock_style_analog_classic">Analógico clássico</string>
+    <string name="clock_style_analog_minimal">Analógico minimalista</string>
+    <string name="clock_style_analog_gold">Analógico dourado</string>
+
+    <!-- Editor -->
+    <string name="new_alarm">Novo alarme</string>
+    <string name="edit_alarm">Editar alarme</string>
+    <string name="repeat">Repetir</string>
+    <string name="label">Etiqueta</string>
+    <string name="alarm_label_hint">Etiqueta do alarme</string>
+    <string name="alarm_sound">Som do alarme</string>
+    <string name="vibration">Vibração</string>
+    <string name="vibration_subtitle">Vibrar com o alarme</string>
+    <string name="snooze_duration">Adiar</string>
+    <string name="snooze_minutes">min</string>
+    <string name="more_options">Mais opções</string>
+    <string name="save_alarm">SALVAR ALARME</string>
+    <string name="delete_alarm">Excluir alarme</string>
+    <string name="set_with_ai">Configurar com PromptHaven AI</string>
+    <string name="set_with_ai_hint">Descreva seu alarme em linguagem natural</string>
+    <string name="ai_understood">PromptHaven entendeu</string>
+    <string name="apply_to_alarm">APLICAR AO ALARME</string>
+    <string name="ready_to_apply">Pronto para aplicar</string>
+    <string name="time_tap_hint">Toque na hora para alterá-la</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+
+    <!-- Ringing -->
+    <string name="snooze_action">ADIAR 10 MINUTOS</string>
+    <string name="hold_to_dismiss">SEGURE PARA DISPENSAR</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Configurações</string>
+    <string name="appearance">APARÊNCIA</string>
+    <string name="theme">Tema</string>
+    <string name="system_default">Padrão do sistema</string>
+    <string name="light">Claro</string>
+    <string name="dark">Escuro</string>
+    <string name="alarm_defaults">PADRÕES DE ALARME</string>
+    <string name="default_snooze">Adiar padrão</string>
+    <string name="default_snooze_subtitle">Duração usada ao adiar</string>
+    <string name="default_alarm_sound">Som de alarme padrão</string>
+    <string name="ph_ai_section">PROMPTHAVEN AI</string>
+    <string name="smart_suggestions">Sugestões inteligentes de alarme</string>
+    <string name="smart_suggestions_subtitle">Sugerir alarmes provavelmente esquecidos</string>
+    <string name="ai_setup">Configuração de alarme por IA</string>
+    <string name="ai_setup_subtitle">Configuração em linguagem natural pelo proxy PromptHaven AI</string>
+    <string name="ai_setup_enabled">Ativado</string>
+    <string name="ai_setup_disabled">Configuração necessária</string>
+    <string name="alarm_reliability">CONFIABILIDADE DO ALARME</string>
+    <string name="exact_alarm_access">Acesso a alarme exato</string>
+    <string name="notifications">Notificações</string>
+    <string name="full_screen_alarms">Alarmes em tela cheia</string>
+    <string name="battery_optimization">Otimização de bateria</string>
+    <string name="status_allowed">Permitido</string>
+    <string name="status_action_needed">Ação necessária</string>
+    <string name="status_optimized">Otimizado</string>
+    <string name="status_recommended">Recomendado</string>
+    <string name="about">SOBRE</string>
+    <string name="privacy">Privacidade</string>
+    <string name="open_source_licenses">Licenças de código aberto</string>
+    <string name="ecosystem_footer">Smart Alarm Clock\npor PromptHaven Studio</string>
+    <string name="back">Voltar</string>
+    <string name="ai_preview">Prévia da IA</string>
+    <string name="retry">Tentar novamente</string>
+    <string name="refine_request">Refinar solicitação</string>
+    <string name="preview">Prévia</string>
+
+    <!-- Language -->
+    <string name="language">Idioma</string>
+    <string name="language_dialog_title">Escolher idioma</string>
+
+    <!-- AI errors -->
+    <string name="ai_parse_error">Não consegui entender essa solicitação. Tente uma hora como 07:30 e um dia.</string>
+
+    <!-- Home AI suggestion -->
+    <string name="ai_suggestion_single">Você costuma definir um alarme às %1$s. Nenhum alarme está configurado para amanhã.</string>
+    <string name="ai_suggestion_weekdays">Você costuma definir um alarme às %1$s em dias de semana. Nenhum alarme está configurado para amanhã.</string>
+    <string name="ai_suggestion_days">Você costuma definir um alarme às %1$s às %2$s. Nenhum alarme está configurado para amanhã.</string>
+
+    <!-- Theme label -->
+    <string name="theme_auto">Automático</string>
+</resources>

@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -155,7 +157,7 @@ fun AlarmEditorScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onDone) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.settings_desc))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -166,6 +168,7 @@ fun AlarmEditorScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .imePadding()
         ) {
             // Hero time card
             TimeHeroCard(
@@ -202,13 +205,17 @@ fun AlarmEditorScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = PhSpacing.lg),
-                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(PhSpacing.xs)
             ) {
+                // Equal-width circular chips so all seven fit on narrow and
+                // landscape screens (weight distributes width, aspectRatio keeps
+                // each chip a circle).
                 repeatDayOptions.forEach { day ->
                     PhDayChip(
                         day = day,
                         selected = day in uiState.repeatDays,
-                        onClick = { viewModel.toggleDay(day) }
+                        onClick = { viewModel.toggleDay(day) },
+                        modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                 }
             }

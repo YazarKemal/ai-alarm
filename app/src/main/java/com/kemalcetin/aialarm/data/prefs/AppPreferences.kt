@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.kemalcetin.aialarm.core.locale.AppLanguage
 import com.kemalcetin.aialarm.ui.clock.ClockStyle
 import com.kemalcetin.aialarm.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
@@ -62,6 +63,17 @@ class AppPreferences(private val context: Context) {
         context.dataStore.edit { prefs -> prefs[KEY_THEME_MODE] = mode.name }
     }
 
+    /**
+     * User-selected application language. English is the default — the app never
+     * follows the device locale on first launch.
+     */
+    val selectedLanguageTag: Flow<String> = context.dataStore.data
+        .map { prefs -> prefs[KEY_LANGUAGE_TAG] ?: AppLanguage.DEFAULT_TAG }
+
+    suspend fun setSelectedLanguage(tag: String) {
+        context.dataStore.edit { prefs -> prefs[KEY_LANGUAGE_TAG] = tag }
+    }
+
     companion object {
         const val DEFAULT_SNOOZE = 5
         // Never let a newly installed app create alarms autonomously without an explicit opt-in.
@@ -72,5 +84,6 @@ class AppPreferences(private val context: Context) {
         private val KEY_AI_LAST_AUTO_CREATE = longPreferencesKey("ai_last_auto_create_time")
         private val KEY_CLOCK_STYLE = stringPreferencesKey("clock_style")
         private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
+        private val KEY_LANGUAGE_TAG = stringPreferencesKey("selected_language")
     }
 }

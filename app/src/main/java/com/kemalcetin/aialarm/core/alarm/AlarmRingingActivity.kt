@@ -1,5 +1,6 @@
 package com.kemalcetin.aialarm.core.alarm
 
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -17,8 +18,16 @@ class AlarmRingingActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setShowWhenLocked(true)
-        setTurnScreenOn(true)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        } else {
+            // Legacy flags for API 26: keep the window on screen and over the lock.
+            window.addFlags(
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+            )
+        }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         val alarmId = intent.getLongExtra(AlarmIntentFactory.EXTRA_ALARM_ID, -1L)

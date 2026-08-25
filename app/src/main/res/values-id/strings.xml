@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_description">Notifikasi alarm aktif berbunyi</string>
+    <string name="alarm_default_label">Alarm</string>
+    <string name="alarm_ringing">Alarm berbunyi</string>
+    <string name="snooze">Tunda</string>
+    <string name="dismiss">Abaikan</string>
+
+    <!-- Home -->
+    <string name="home_title">Smart Alarm Clock</string>
+    <string name="next_alarm">Alarm berikutnya</string>
+    <string name="no_alarm_yet">Belum ada alarm</string>
+    <string name="no_alarm_hint">Ketuk + untuk menambahkan alarm.</string>
+    <string name="alarms_section">ALARM</string>
+    <string name="one_time">Sekali saja</string>
+    <string name="add_alarm_desc">Tambahkan alarm</string>
+    <string name="settings_desc">Pengaturan</string>
+    <string name="today">Hari ini</string>
+    <string name="tomorrow">Besok</string>
+    <string name="add_alarm">Tambahkan alarm</string>
+    <string name="notification_banner">Notifikasi nonaktif; peringatan layar penuh mungkin tidak muncul.</string>
+    <string name="exact_alarm_banner">Akses alarm tepat diperlukan untuk alarm yang andal.</string>
+    <string name="fullscreen_banner">Akses alarm layar penuh nonaktif.</string>
+    <string name="allow">Izinkan</string>
+    <string name="open_settings">Pengaturan</string>
+
+    <!-- AI suggestion -->
+    <string name="ph_ai_name">PromptHaven AI</string>
+    <string name="ignore">ABAIKAN</string>
+    <string name="set_alarm">ATUR ALARM</string>
+
+    <!-- Clock -->
+    <string name="clock_style_title">Gaya jam</string>
+    <string name="clock_style_digital_minimal">Digital minimalis</string>
+    <string name="clock_style_digital_bold">Digital tebal</string>
+    <string name="clock_style_digital_night">Digital malam</string>
+    <string name="clock_style_analog_classic">Analog klasik</string>
+    <string name="clock_style_analog_minimal">Analog minimalis</string>
+    <string name="clock_style_analog_gold">Analog emas</string>
+
+    <!-- Editor -->
+    <string name="new_alarm">Alarm baru</string>
+    <string name="edit_alarm">Ubah alarm</string>
+    <string name="repeat">Ulangi</string>
+    <string name="label">Label</string>
+    <string name="alarm_label_hint">Label alarm</string>
+    <string name="alarm_sound">Suara alarm</string>
+    <string name="vibration">Getaran</string>
+    <string name="vibration_subtitle">Bergetar dengan alarm</string>
+    <string name="snooze_duration">Tunda</string>
+    <string name="snooze_minutes">mnt</string>
+    <string name="more_options">Opsi lainnya</string>
+    <string name="save_alarm">SIMPAN ALARM</string>
+    <string name="delete_alarm">Hapus alarm</string>
+    <string name="set_with_ai">Atur dengan PromptHaven AI</string>
+    <string name="set_with_ai_hint">Jelaskan alarm Anda dalam bahasa alami</string>
+    <string name="ai_understood">PromptHaven memahami</string>
+    <string name="apply_to_alarm">TERAPKAN KE ALARM</string>
+    <string name="ready_to_apply">Siap diterapkan</string>
+    <string name="time_tap_hint">Ketuk waktu untuk mengubahnya</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Batal</string>
+
+    <!-- Ringing -->
+    <string name="snooze_action">TUNDA 10 MENIT</string>
+    <string name="hold_to_dismiss">TAHAN UNTUK MENGABAIKAN</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Pengaturan</string>
+    <string name="appearance">TAMPILAN</string>
+    <string name="theme">Tema</string>
+    <string name="system_default">Default sistem</string>
+    <string name="light">Terang</string>
+    <string name="dark">Gelap</string>
+    <string name="alarm_defaults">DEFAULT ALARM</string>
+    <string name="default_snooze">Tunda default</string>
+    <string name="default_snooze_subtitle">Durasi yang digunakan saat menunda</string>
+    <string name="default_alarm_sound">Suara alarm default</string>
+    <string name="ph_ai_section">PROMPTHAVEN AI</string>
+    <string name="smart_suggestions">Saran alarm cerdas</string>
+    <string name="smart_suggestions_subtitle">Sarankan alarm yang mungkin terlupakan</string>
+    <string name="ai_setup">Pengaturan alarm AI</string>
+    <string name="ai_setup_subtitle">Pengaturan bahasa alami melalui proxy PromptHaven AI</string>
+    <string name="ai_setup_enabled">Aktif</string>
+    <string name="ai_setup_disabled">Perlu pengaturan</string>
+    <string name="alarm_reliability">KEANDALAN ALARM</string>
+    <string name="exact_alarm_access">Akses alarm tepat</string>
+    <string name="notifications">Notifikasi</string>
+    <string name="full_screen_alarms">Alarm layar penuh</string>
+    <string name="battery_optimization">Optimasi baterai</string>
+    <string name="status_allowed">Diizinkan</string>
+    <string name="status_action_needed">Perlu tindakan</string>
+    <string name="status_optimized">Dioptimalkan</string>
+    <string name="status_recommended">Disarankan</string>
+    <string name="about">TENTANG</string>
+    <string name="privacy">Privasi</string>
+    <string name="open_source_licenses">Lisensi sumber terbuka</string>
+    <string name="ecosystem_footer">Smart Alarm Clock\noleh PromptHaven Studio</string>
+    <string name="back">Kembali</string>
+    <string name="ai_preview">Pratinjau AI</string>
+    <string name="retry">Coba lagi</string>
+    <string name="refine_request">Perbaiki permintaan</string>
+    <string name="preview">Pratinjau</string>
+
+    <!-- Language -->
+    <string name="language">Bahasa</string>
+    <string name="language_dialog_title">Pilih bahasa</string>
+
+    <!-- AI errors -->
+    <string name="ai_parse_error">Saya tidak memahami permintaan itu. Coba waktu seperti 07:30 dan satu hari.</string>
+
+    <!-- Home AI suggestion -->
+    <string name="ai_suggestion_single">Anda biasanya mengatur alarm pada %1$s. Belum ada alarm untuk besok.</string>
+    <string name="ai_suggestion_weekdays">Anda biasanya mengatur alarm %1$s pada hari kerja. Belum ada alarm untuk besok.</string>
+    <string name="ai_suggestion_days">Anda biasanya mengatur alarm %1$s pada %2$s. Belum ada alarm untuk besok.</string>
+
+    <!-- Theme label -->
+    <string name="theme_auto">Otomatis</string>
+</resources>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_description">सक्रिय अलार्म बजने की सूचना</string>
+    <string name="alarm_default_label">अलार्म</string>
+    <string name="alarm_ringing">अलार्म बज रहा है</string>
+    <string name="snooze">स्नूज़</string>
+    <string name="dismiss">खारिज करें</string>
+
+    <!-- Home -->
+    <string name="home_title">Smart Alarm Clock</string>
+    <string name="next_alarm">अगला अलार्म</string>
+    <string name="no_alarm_yet">अभी कोई अलार्म नहीं</string>
+    <string name="no_alarm_hint">अलार्म जोड़ने के लिए + पर टैप करें।</string>
+    <string name="alarms_section">अलार्म</string>
+    <string name="one_time">एक बार</string>
+    <string name="add_alarm_desc">अलार्म जोड़ें</string>
+    <string name="settings_desc">सेटिंग्स</string>
+    <string name="today">आज</string>
+    <string name="tomorrow">कल</string>
+    <string name="add_alarm">अलार्म जोड़ें</string>
+    <string name="notification_banner">सूचनाएँ बंद हैं; फ़ुल-स्क्रीन अलर्ट नहीं दिख सकते।</string>
+    <string name="exact_alarm_banner">विश्वसनीय अलार्म के लिए सटीक अलार्म पहुँच आवश्यक है।</string>
+    <string name="fullscreen_banner">फ़ुल-स्क्रीन अलार्म पहुँच बंद है।</string>
+    <string name="allow">अनुमति दें</string>
+    <string name="open_settings">सेटिंग्स</string>
+
+    <!-- AI suggestion -->
+    <string name="ph_ai_name">PromptHaven AI</string>
+    <string name="ignore">अनदेखा करें</string>
+    <string name="set_alarm">अलार्म सेट करें</string>
+
+    <!-- Clock -->
+    <string name="clock_style_title">घड़ी शैली</string>
+    <string name="clock_style_digital_minimal">डिजिटल मिनिमल</string>
+    <string name="clock_style_digital_bold">डिजिटल बोल्ड</string>
+    <string name="clock_style_digital_night">डिजिटल नाइट</string>
+    <string name="clock_style_analog_classic">एनालॉग क्लासिक</string>
+    <string name="clock_style_analog_minimal">एनालॉग मिनिमल</string>
+    <string name="clock_style_analog_gold">एनालॉग गोल्ड</string>
+
+    <!-- Editor -->
+    <string name="new_alarm">नया अलार्म</string>
+    <string name="edit_alarm">अलार्म संपादित करें</string>
+    <string name="repeat">दोहराएँ</string>
+    <string name="label">लेबल</string>
+    <string name="alarm_label_hint">अलार्म लेबल</string>
+    <string name="alarm_sound">अलार्म ध्वनि</string>
+    <string name="vibration">कंपन</string>
+    <string name="vibration_subtitle">अलार्म के साथ कंपन</string>
+    <string name="snooze_duration">स्नूज़</string>
+    <string name="snooze_minutes">मि</string>
+    <string name="more_options">अधिक विकल्प</string>
+    <string name="save_alarm">अलार्म सहेजें</string>
+    <string name="delete_alarm">अलार्म हटाएँ</string>
+    <string name="set_with_ai">PromptHaven AI से सेट करें</string>
+    <string name="set_with_ai_hint">अपना अलार्म प्राकृतिक भाषा में बताएँ</string>
+    <string name="ai_understood">PromptHaven समझ गया</string>
+    <string name="apply_to_alarm">अलार्म पर लागू करें</string>
+    <string name="ready_to_apply">लागू करने के लिए तैयार</string>
+    <string name="time_tap_hint">समय बदलने के लिए टैप करें</string>
+    <string name="ok">ठीक है</string>
+    <string name="cancel">रद्द करें</string>
+
+    <!-- Ringing -->
+    <string name="snooze_action">10 मिनट स्नूज़</string>
+    <string name="hold_to_dismiss">खारिज करने के लिए दबाए रखें</string>
+
+    <!-- Settings -->
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="appearance">दिखावट</string>
+    <string name="theme">थीम</string>
+    <string name="system_default">सिस्टम डिफ़ॉल्ट</string>
+    <string name="light">लाइट</string>
+    <string name="dark">डार्क</string>
+    <string name="alarm_defaults">अलार्म डिफ़ॉल्ट</string>
+    <string name="default_snooze">डिफ़ॉल्ट स्नूज़</string>
+    <string name="default_snooze_subtitle">स्नूज़ करते समय उपयोग की जाने वाली अवधि</string>
+    <string name="default_alarm_sound">डिफ़ॉल्ट अलार्म ध्वनि</string>
+    <string name="ph_ai_section">PROMPTHAVEN AI</string>
+    <string name="smart_suggestions">स्मार्ट अलार्म सुझाव</string>
+    <string name="smart_suggestions_subtitle">भूल जाने वाले संभावित अलार्म सुझाएँ</string>
+    <string name="ai_setup">AI अलार्म सेटअप</string>
+    <string name="ai_setup_subtitle">PromptHaven AI प्रॉक्सी के माध्यम से प्राकृतिक भाषा सेटअप</string>
+    <string name="ai_setup_enabled">सक्षम</string>
+    <string name="ai_setup_disabled">सेटअप आवश्यक</string>
+    <string name="alarm_reliability">अलार्म विश्वसनीयता</string>
+    <string name="exact_alarm_access">सटीक अलार्म पहुँच</string>
+    <string name="notifications">सूचनाएँ</string>
+    <string name="full_screen_alarms">फ़ुल-स्क्रीन अलार्म</string>
+    <string name="battery_optimization">बैटरी अनुकूलन</string>
+    <string name="status_allowed">अनुमत</string>
+    <string name="status_action_needed">कार्रवाई आवश्यक</string>
+    <string name="status_optimized">अनुकूलित</string>
+    <string name="status_recommended">अनुशंसित</string>
+    <string name="about">जानकारी</string>
+    <string name="privacy">गोपनीयता</string>
+    <string name="open_source_licenses">ओपन-सोर्स लाइसेंस</string>
+    <string name="ecosystem_footer">Smart Alarm Clock\nPromptHaven Studio द्वारा</string>
+    <string name="back">वापस</string>
+    <string name="ai_preview">AI पूर्वावलोकन</string>
+    <string name="retry">पुनः प्रयास करें</string>
+    <string name="refine_request">अनुरोध परिष्कृत करें</string>
+    <string name="preview">पूर्वावलोकन</string>
+
+    <!-- Language -->
+    <string name="language">भाषा</string>
+    <string name="language_dialog_title">भाषा चुनें</string>
+
+    <!-- AI errors -->
+    <string name="ai_parse_error">मैं उस अनुरोध को नहीं समझ पाया। 07:30 जैसा समय और एक दिन आज़माएँ।</string>
+
+    <!-- Home AI suggestion -->
+    <string name="ai_suggestion_single">आप आमतौर पर %1$s पर अलार्म लगाते हैं। कल के लिए कोई अलार्म सेट नहीं है।</string>
+    <string name="ai_suggestion_weekdays">आप आमतौर पर कार्यदिवसों में %1$s पर अलार्म लगाते हैं। कल के लिए कोई अलार्म सेट नहीं है।</string>
+    <string name="ai_suggestion_days">आप आमतौर पर %1$s पर %2$s को अलार्म लगाते हैं। कल के लिए कोई अलार्म सेट नहीं है।</string>
+
+    <!-- Theme label -->
+    <string name="theme_auto">ऑटो</string>
+</resources>

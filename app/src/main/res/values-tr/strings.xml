@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">PromptHaven Alarm</string>
-    <string name="alarm_ringing_channel_name">PromptHaven Alarm</string>
+    <string name="app_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_name">Smart Alarm Clock</string>
     <string name="alarm_ringing_channel_description">Aktif alarm bildirimi</string>
     <string name="alarm_default_label">Alarm</string>
     <string name="alarm_ringing">Alarm çalıyor</string>
@@ -9,7 +9,7 @@
     <string name="dismiss">Kapat</string>
 
     <!-- Home -->
-    <string name="home_title">PromptHaven Alarm</string>
+    <string name="home_title">Smart Alarm Clock</string>
     <string name="next_alarm">Sıradaki alarm</string>
     <string name="no_alarm_yet">Henüz alarm yok</string>
     <string name="no_alarm_hint">Alarm eklemek için + butonuna dokun.</string>
@@ -97,10 +97,25 @@
     <string name="about">HAKKINDA</string>
     <string name="privacy">Gizlilik</string>
     <string name="open_source_licenses">Açık kaynak lisansları</string>
-    <string name="ecosystem_footer">PromptHavenAI ekosisteminin parçası</string>
+    <string name="ecosystem_footer">Smart Alarm Clock\nyazan: PromptHaven Studio</string>
     <string name="back">Geri</string>
     <string name="ai_preview">AI Önizleme</string>
     <string name="retry">Tekrar dene</string>
     <string name="refine_request">İsteği düzenle</string>
     <string name="preview">Önizle</string>
+
+    <!-- Language -->
+    <string name="language">Dil</string>
+    <string name="language_dialog_title">Dil seçin</string>
+
+    <!-- AI errors -->
+    <string name="ai_parse_error">Bu isteği anlayamadım. 07:30 gibi bir saat ve bir gün dene.</string>
+
+    <!-- Home AI suggestion -->
+    <string name="ai_suggestion_single">Genelde %1$s saatinde alarm kurarsın. Yarın için alarm ayarlanmamış.</string>
+    <string name="ai_suggestion_weekdays">Genelde hafta içi %1$s saatinde alarm kurarsın. Yarın için alarm ayarlanmamış.</string>
+    <string name="ai_suggestion_days">Genelde %1$s saatinde, %2$s günlerinde alarm kurarsın. Yarın için alarm ayarlanmamış.</string>
+
+    <!-- Theme label -->
+    <string name="theme_auto">Otomatik</string>
 </resources>

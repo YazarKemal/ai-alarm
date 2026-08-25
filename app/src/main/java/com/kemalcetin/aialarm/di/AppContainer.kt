@@ -7,6 +7,7 @@ import com.kemalcetin.aialarm.core.alarm.AlarmScheduler
 import com.kemalcetin.aialarm.core.alarm.AndroidAlarmScheduler
 import com.kemalcetin.aialarm.core.alarm.DebugAlarmScheduler
 import com.kemalcetin.aialarm.core.alarm.NextAlarmCalculator
+import com.kemalcetin.aialarm.core.locale.AppLanguageManager
 import com.kemalcetin.aialarm.core.permission.BatteryOptimizationManager
 import com.kemalcetin.aialarm.core.permission.ExactAlarmPermissionManager
 import com.kemalcetin.aialarm.core.permission.FullScreenIntentPermissionManager
@@ -78,6 +79,11 @@ class AppContainer(private val context: Context) {
 
     val appPreferences: AppPreferences by lazy { AppPreferences(applicationContext) }
 
+    /** User-selected application language (English default). */
+    val appLanguageManager: AppLanguageManager by lazy {
+        AppLanguageManager(applicationContext)
+    }
+
     val applicationScope: CoroutineScope by lazy {
         CoroutineScope(SupervisorJob() + Dispatchers.Default)
     }
@@ -95,7 +101,13 @@ class AppContainer(private val context: Context) {
 
     /** Server-side PromptHaven AI proxy client. No provider secret on device. */
     val aiAlarmInterpreter: AiAlarmInterpreter by lazy {
-        PromptHavenAiAlarmInterpreter(tokenProvider = appCheckTokenProvider)
+        PromptHavenAiAlarmInterpreter(
+            tokenProvider = appCheckTokenProvider,
+            // The AI request's locale is the user-selected APP language (English
+            // default), not the device locale, so the backend answers in the
+            // user's chosen language.
+            localeProvider = { appLanguageManager.current().aiTag }
+        )
     }
 
     val aiAlarmEngine: AiAlarmEngine by lazy {

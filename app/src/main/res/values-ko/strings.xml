@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_description">알람이 울리는 알림</string>
+    <string name="alarm_default_label">알람</string>
+    <string name="alarm_ringing">알람이 울리고 있습니다</string>
+    <string name="snooze">다시 알림</string>
+    <string name="dismiss">닫기</string>
+
+    <!-- Home -->
+    <string name="home_title">Smart Alarm Clock</string>
+    <string name="next_alarm">다음 알람</string>
+    <string name="no_alarm_yet">아직 알람이 없습니다</string>
+    <string name="no_alarm_hint">+를 탭하여 알람을 추가하세요.</string>
+    <string name="alarms_section">알람</string>
+    <string name="one_time">한 번</string>
+    <string name="add_alarm_desc">알람 추가</string>
+    <string name="settings_desc">설정</string>
+    <string name="today">오늘</string>
+    <string name="tomorrow">내일</string>
+    <string name="add_alarm">알람 추가</string>
+    <string name="notification_banner">알림이 꺼져 있어 전체 화면 알림이 표시되지 않을 수 있습니다.</string>
+    <string name="exact_alarm_banner">안정적인 알람을 위해 정확한 알람 액세스가 필요합니다.</string>
+    <string name="fullscreen_banner">전체 화면 알람 액세스가 꺼져 있습니다.</string>
+    <string name="allow">허용</string>
+    <string name="open_settings">설정</string>
+
+    <!-- AI suggestion -->
+    <string name="ph_ai_name">PromptHaven AI</string>
+    <string name="ignore">무시</string>
+    <string name="set_alarm">알람 설정</string>
+
+    <!-- Clock -->
+    <string name="clock_style_title">시계 스타일</string>
+    <string name="clock_style_digital_minimal">디지털 미니멀</string>
+    <string name="clock_style_digital_bold">디지털 볼드</string>
+    <string name="clock_style_digital_night">디지털 나이트</string>
+    <string name="clock_style_analog_classic">아날로그 클래식</string>
+    <string name="clock_style_analog_minimal">아날로그 미니멀</string>
+    <string name="clock_style_analog_gold">아날로그 골드</string>
+
+    <!-- Editor -->
+    <string name="new_alarm">새 알람</string>
+    <string name="edit_alarm">알람 편집</string>
+    <string name="repeat">반복</string>
+    <string name="label">라벨</string>
+    <string name="alarm_label_hint">알람 라벨</string>
+    <string name="alarm_sound">알람음</string>
+    <string name="vibration">진동</string>
+    <string name="vibration_subtitle">알람과 함께 진동</string>
+    <string name="snooze_duration">다시 알림</string>
+    <string name="snooze_minutes">분</string>
+    <string name="more_options">추가 옵션</string>
+    <string name="save_alarm">알람 저장</string>
+    <string name="delete_alarm">알람 삭제</string>
+    <string name="set_with_ai">PromptHaven AI로 설정</string>
+    <string name="set_with_ai_hint">자연어로 알람을 설명하세요</string>
+    <string name="ai_understood">PromptHaven이 이해했습니다</string>
+    <string name="apply_to_alarm">알람에 적용</string>
+    <string name="ready_to_apply">적용 준비 완료</string>
+    <string name="time_tap_hint">시간을 탭하여 변경</string>
+    <string name="ok">확인</string>
+    <string name="cancel">취소</string>
+
+    <!-- Ringing -->
+    <string name="snooze_action">10분 다시 알림</string>
+    <string name="hold_to_dismiss">길게 눌러 닫기</string>
+
+    <!-- Settings -->
+    <string name="settings_title">설정</string>
+    <string name="appearance">모양</string>
+    <string name="theme">테마</string>
+    <string name="system_default">시스템 기본값</string>
+    <string name="light">라이트</string>
+    <string name="dark">다크</string>
+    <string name="alarm_defaults">알람 기본값</string>
+    <string name="default_snooze">기본 다시 알림</string>
+    <string name="default_snooze_subtitle">다시 알림 시 사용되는 시간</string>
+    <string name="default_alarm_sound">기본 알람음</string>
+    <string name="ph_ai_section">PROMPTHAVEN AI</string>
+    <string name="smart_suggestions">스마트 알람 제안</string>
+    <string name="smart_suggestions_subtitle">놓치기 쉬운 알람 제안</string>
+    <string name="ai_setup">AI 알람 설정</string>
+    <string name="ai_setup_subtitle">PromptHaven AI 프록시를 통한 자연어 설정</string>
+    <string name="ai_setup_enabled">사용 가능</string>
+    <string name="ai_setup_disabled">설정 필요</string>
+    <string name="alarm_reliability">알람 신뢰성</string>
+    <string name="exact_alarm_access">정확한 알람 액세스</string>
+    <string name="notifications">알림</string>
+    <string name="full_screen_alarms">전체 화면 알람</string>
+    <string name="battery_optimization">배터리 최적화</string>
+    <string name="status_allowed">허용됨</string>
+    <string name="status_action_needed">작업 필요</string>
+    <string name="status_optimized">최적화됨</string>
+    <string name="status_recommended">권장</string>
+    <string name="about">정보</string>
+    <string name="privacy">개인정보 보호</string>
+    <string name="open_source_licenses">오픈소스 라이선스</string>
+    <string name="ecosystem_footer">Smart Alarm Clock\nby PromptHaven Studio</string>
+    <string name="back">뒤로</string>
+    <string name="ai_preview">AI 미리보기</string>
+    <string name="retry">다시 시도</string>
+    <string name="refine_request">요청 수정</string>
+    <string name="preview">미리보기</string>
+
+    <!-- Language -->
+    <string name="language">언어</string>
+    <string name="language_dialog_title">언어 선택</string>
+
+    <!-- AI errors -->
+    <string name="ai_parse_error">요청을 이해하지 못했습니다. 07:30 같은 시간과 요일을 입력해 보세요.</string>
+
+    <!-- Home AI suggestion -->
+    <string name="ai_suggestion_single">보통 %1$s에 알람을 설정합니다. 내일 알람이 설정되어 있지 않습니다.</string>
+    <string name="ai_suggestion_weekdays">보통 평일 %1$s에 알람을 설정합니다. 내일 알람이 설정되어 있지 않습니다.</string>
+    <string name="ai_suggestion_days">보통 %1$s에 %2$s 알람을 설정합니다. 내일 알람이 설정되어 있지 않습니다.</string>
+
+    <!-- Theme label -->
+    <string name="theme_auto">자동</string>
+</resources>

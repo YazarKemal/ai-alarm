@@ -40,12 +40,15 @@ class AlarmEditorViewModel(
     private val scheduler: AlarmScheduler,
     private val preferences: AppPreferences,
     private val alarmId: Long,
+    private val defaultLabel: String,
     private val prefillHour: Int? = null,
     private val prefillMinute: Int? = null,
     private val prefillDays: Set<DayOfWeek>? = null
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AlarmEditorUiState(alarmId = alarmId, isEdit = alarmId > 0))
+    private val _uiState = MutableStateFlow(
+        AlarmEditorUiState(alarmId = alarmId, isEdit = alarmId > 0, label = defaultLabel)
+    )
     val uiState: StateFlow<AlarmEditorUiState> = _uiState.asStateFlow()
 
     private val _saved = MutableSharedFlow<Unit>()
@@ -131,7 +134,7 @@ class AlarmEditorViewModel(
                     id = state.alarmId,
                     hour = state.hour,
                     minute = state.minute,
-                    label = state.label.ifBlank { "Alarm" },
+                    label = state.label.ifBlank { defaultLabel },
                     repeatDays = state.repeatDays,
                     oneTimeDate = if (state.repeatDays.isEmpty()) state.oneTimeDate else null,
                     vibrate = state.vibrate,
@@ -166,7 +169,7 @@ class AlarmEditorViewModel(
         id = 0L,
         hour = _uiState.value.hour,
         minute = _uiState.value.minute,
-        label = _uiState.value.label.ifBlank { "Alarm" },
+        label = _uiState.value.label.ifBlank { defaultLabel },
         enabled = true,
         repeatDays = _uiState.value.repeatDays,
         vibrate = _uiState.value.vibrate,
@@ -192,6 +195,9 @@ class AlarmEditorViewModel(
                         scheduler = container.alarmScheduler,
                         preferences = container.appPreferences,
                         alarmId = alarmId,
+                        defaultLabel = container.appContext.getString(
+                            com.kemalcetin.aialarm.R.string.alarm_default_label
+                        ),
                         prefillHour = prefillHour,
                         prefillMinute = prefillMinute,
                         prefillDays = prefillDays

@@ -139,6 +139,26 @@ class PromptHavenAiAlarmInterpreterTest {
         assertFalse(body.contains("prompt"))
     }
 
+    @Test
+    fun `request body uses the selected app language from the locale provider`() {
+        // Simulates the app wiring: the user-selected application language (here
+        // Turkish) must be sent to the backend, not the device locale.
+        val localized = PromptHavenAiAlarmInterpreter(
+            baseUrl = "http://x",
+            localeProvider = { "tr-TR" }
+        )
+        val body = localized.buildRequestBody(text = "yaz saati kur")
+        assertTrue(body.contains("\"locale\":\"tr-TR\""))
+        assertFalse(body.contains("\"locale\":\"en\""))
+    }
+
+    @Test
+    fun `locale provider defaults to the device locale`() {
+        val defaultInterpreter = PromptHavenAiAlarmInterpreter(baseUrl = "http://x")
+        val body = defaultInterpreter.buildRequestBody(text = "wake me")
+        assertTrue(body.contains("\"locale\":\""))
+    }
+
     // ---- App Check header / token integration ----
 
     @Test

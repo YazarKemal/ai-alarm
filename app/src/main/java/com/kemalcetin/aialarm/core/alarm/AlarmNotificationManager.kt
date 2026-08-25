@@ -54,8 +54,16 @@ class AlarmNotificationManager(private val context: Context) {
 
     fun notifyRinging(alarmId: Long, label: String) {
         createChannel()
-        NotificationManagerCompat.from(context)
-            .notify(NOTIFICATION_ID, buildRingingNotification(alarmId, label))
+        // POST_NOTIFICATIONS is a runtime permission on API 33+. If it has not
+        // been granted (or can't be checked), posting would throw; the full-screen
+        // ringing activity still shows the alarm either way, so degrade gracefully.
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
+        try {
+            NotificationManagerCompat.from(context)
+                .notify(NOTIFICATION_ID, buildRingingNotification(alarmId, label))
+        } catch (_: SecurityException) {
+            // Permission revoked between the check and the post — nothing to show.
+        }
     }
 
     fun cancel() {

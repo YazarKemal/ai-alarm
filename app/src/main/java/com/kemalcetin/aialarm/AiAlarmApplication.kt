@@ -1,15 +1,29 @@
 package com.kemalcetin.aialarm
 
 import android.app.Application
+import android.content.Context
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
+import com.kemalcetin.aialarm.core.locale.AppLanguageManager
 import com.kemalcetin.aialarm.di.AppContainer
 
 class AiAlarmApplication : Application() {
 
     lateinit var container: AppContainer
         private set
+
+    /** Per-app language: persisted, English by default. */
+    val appLanguageManager: AppLanguageManager by lazy {
+        AppLanguageManager(this)
+    }
+
+    override fun attachBaseContext(base: Context) {
+        // Wrap the base context with the selected app language so the application
+        // context (used for notification channel names, resources, etc.) resolves
+        // in the user's chosen language.
+        super.attachBaseContext(appLanguageManager.applyTo(base))
+    }
 
     override fun onCreate() {
         super.onCreate()
