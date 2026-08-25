@@ -1,16 +1,26 @@
 package com.kemalcetin.aialarm.ui.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Snooze
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -20,21 +30,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kemalcetin.aialarm.di.AppContainer
-import com.kemalcetin.aialarm.ui.common.SectionHeader
 
 private val snoozeOptions = listOf(5, 10, 15)
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     container: AppContainer,
@@ -44,9 +52,12 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = {
+                    Text("Ayarlar", fontWeight = FontWeight.SemiBold)
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -61,58 +72,120 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            SectionHeader("ALARM")
             Text(
-                "Default snooze",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                text = "ALARM",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp)
             )
-            Spacer(Modifier.height(8.dp))
-            FlowRow(Modifier.padding(horizontal = 16.dp)) {
-                snoozeOptions.forEach { minutes ->
-                    FilterChip(
-                        selected = uiState.defaultSnoozeMinutes == minutes,
-                        onClick = { viewModel.setDefaultSnooze(minutes) },
-                        label = { Text("$minutes min") },
-                        modifier = Modifier.padding(end = 8.dp, bottom = 8.dp)
+
+            SettingsCard {
+                SettingRow(
+                    icon = Icons.Outlined.Snooze,
+                    title = "Varsayılan erteleme",
+                    subtitle = "Erteleme butonuna basıldığında kullanılacak süre"
+                ) {
+                    snoozeOptions.forEach { minutes ->
+                        FilterChip(
+                            selected = uiState.defaultSnoozeMinutes == minutes,
+                            onClick = { viewModel.setDefaultSnooze(minutes) },
+                            label = { Text("$minutes dk") },
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            Text(
+                text = "AI ASSISTANT",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp)
+            )
+
+            SettingsCard {
+                SettingRow(
+                    icon = Icons.Outlined.AutoAwesome,
+                    title = "Unutulan alarmları kur",
+                    subtitle = "Tekrarlı alarm alışkanlıklarını öğrenip eksikleri otomatik kurar"
+                ) {
+                    Switch(
+                        checked = uiState.autoCreateEnabled,
+                        onCheckedChange = viewModel::setAutoCreateEnabled
                     )
                 }
             }
 
-            SectionHeader("AI ASSISTANT")
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text("Auto-set forgotten alarms", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Switch(checked = uiState.autoCreateEnabled, onCheckedChange = viewModel::setAutoCreateEnabled)
-            }
-            Spacer(Modifier.height(12.dp))
-            Text(
-                "DeepSeek (bulut zeka): " +
-                    if (uiState.deepSeekConfigured) "Açık" else "Kapalı",
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (uiState.deepSeekConfigured) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                modifier = Modifier.padding(horizontal = 16.dp)
+            Spacer(Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+private fun SettingsCard(content: @Composable () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(Modifier.padding(horizontal = 8.dp)) {
+            content()
+        }
+    }
+}
+
+@Composable
+private fun SettingRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String,
+    trailing: @Composable () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 16.dp)
+    ) {
+        Box(
+            Modifier
+                .size(42.dp)
+                .background(
+                    MaterialTheme.colorScheme.secondaryContainer,
+                    RoundedCornerShape(13.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.size(22.dp)
             )
-            Spacer(Modifier.height(4.dp))
+        }
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
             Text(
-                if (uiState.deepSeekConfigured) {
-                    "DeepSeek, cihaz içi hesabın bulamadığı düzenleri bulmaya yardımcı olur."
-                } else {
-                    "DeepSeek anahtarı eklenmedi; asistan yalnızca cihaz içi hesapla çalışıyor."
-                },
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(Modifier.height(24.dp))
+        }
+        Spacer(Modifier.width(12.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            trailing()
         }
     }
 }
