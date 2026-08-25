@@ -39,7 +39,8 @@ class AppPreferences(private val context: Context) {
 
     companion object {
         const val DEFAULT_SNOOZE = 5
-        const val DEFAULT_AUTO_CREATE_ENABLED = true
+        // Never let a newly installed app create alarms autonomously without an explicit opt-in.
+        const val DEFAULT_AUTO_CREATE_ENABLED = false
         private val KEY_DEFAULT_SNOOZE = intPreferencesKey("default_snooze_minutes")
         private val KEY_AUTO_CREATE_ENABLED = booleanPreferencesKey("ai_auto_create_enabled")
         private val KEY_AI_LAST_AUTO_CREATE = longPreferencesKey("ai_last_auto_create_time")
