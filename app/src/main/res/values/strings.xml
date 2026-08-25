@@ -98,4 +98,9 @@
     <string name="privacy">Privacy</string>
     <string name="open_source_licenses">Open-source licenses</string>
     <string name="ecosystem_footer">Part of the PromptHavenAI ecosystem</string>
+    <string name="back">Back</string>
+    <string name="ai_preview">AI Preview</string>
+    <string name="retry">Retry</string>
+    <string name="refine_request">Refine request</string>
+    <string name="preview">Preview</string>
 </resources>

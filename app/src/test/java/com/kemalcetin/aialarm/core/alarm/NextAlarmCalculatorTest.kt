@@ -6,6 +6,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -19,7 +20,8 @@ class NextAlarmCalculatorTest {
         hour: Int,
         minute: Int,
         days: Set<DayOfWeek>,
-        enabled: Boolean = true
+        enabled: Boolean = true,
+        oneTimeDate: LocalDate? = null
     ) = Alarm(
         id = 1L,
         hour = hour,
@@ -30,6 +32,7 @@ class NextAlarmCalculatorTest {
         vibrate = false,
         soundUri = null,
         snoozeMinutes = 5,
+        oneTimeDate = oneTimeDate,
         createdAt = Instant.EPOCH,
         updatedAt = Instant.EPOCH
     )
@@ -105,5 +108,54 @@ class NextAlarmCalculatorTest {
     fun `disabled alarm returns null`() {
         val from = zdt(2024, 1, 15, 8, 0)
         assertNull(calculator.nextTrigger(alarm(9, 0, emptySet(), enabled = false), from))
+    }
+
+    @Test
+    fun `pinned one-time date tomorrow at 0730 while now 0600`() {
+        // Today 2024-01-15 at 06:00; pinned date is the 16th, time 07:30.
+        val from = zdt(2024, 1, 15, 6, 0)
+        val result = calculator.nextTrigger(
+            alarm(7, 30, emptySet(), oneTimeDate = LocalDate.of(2024, 1, 16)), from
+        )
+        assertEquals(zdt(2024, 1, 16, 7, 30), result)
+    }
+
+    @Test
+    fun `pinned one-time date today at 0730 while now 0600`() {
+        // Today 2024-01-15 at 06:00; pinned date is today, time 07:30.
+        val from = zdt(2024, 1, 15, 6, 0)
+        val result = calculator.nextTrigger(
+            alarm(7, 30, emptySet(), oneTimeDate = LocalDate.of(2024, 1, 15)), from
+        )
+        assertEquals(zdt(2024, 1, 15, 7, 30), result)
+    }
+
+    @Test
+    fun `pinned one-time date already past returns null`() {
+        // Now 2024-01-15 at 08:00; the pinned date+time is already behind us.
+        val from = zdt(2024, 1, 15, 8, 0)
+        val result = calculator.nextTrigger(
+            alarm(7, 30, emptySet(), oneTimeDate = LocalDate.of(2024, 1, 15)), from
+        )
+        assertNull(result)
+    }
+
+    @Test
+    fun `pinned one-time date in the past returns null`() {
+        // Pinned date is yesterday; never shift forward.
+        val from = zdt(2024, 1, 15, 6, 0)
+        val result = calculator.nextTrigger(
+            alarm(7, 30, emptySet(), oneTimeDate = LocalDate.of(2024, 1, 14)), from
+        )
+        assertNull(result)
+    }
+
+    @Test
+    fun `repeating alarm unaffected by oneTimeDate`() {
+        val from = zdt(2024, 1, 15, 10, 0) // Monday, past 09:00
+        val days = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY)
+        // RepeatDays is non-empty so oneTimeDate stays null and legacy logic applies.
+        val result = calculator.nextTrigger(alarm(9, 0, days), from)
+        assertEquals(zdt(2024, 1, 17, 9, 0), result) // Wednesday
     }
 }

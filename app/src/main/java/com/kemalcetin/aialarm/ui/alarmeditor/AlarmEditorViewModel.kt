@@ -10,8 +10,7 @@ import com.kemalcetin.aialarm.data.prefs.AppPreferences
 import com.kemalcetin.aialarm.di.AppContainer
 import com.kemalcetin.aialarm.domain.model.Alarm
 import com.kemalcetin.aialarm.domain.repository.AlarmRepository
-import com.kemalcetin.aialarm.feature.assistant.network.AiAlarmInterpreter
-import com.kemalcetin.aialarm.feature.assistant.network.AlarmInterpretResult
+import com.kemalcetin.aialarm.ui.aipreview.AiPreviewResult
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -22,6 +21,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 
 data class AlarmEditorUiState(
     val alarmId: Long = -1L,
@@ -30,16 +30,15 @@ data class AlarmEditorUiState(
     val minute: Int = 0,
     val label: String = "Alarm",
     val repeatDays: Set<DayOfWeek> = emptySet(),
+    val oneTimeDate: LocalDate? = null,
     val vibrate: Boolean = true,
-    val snoozeMinutes: Int = 5,
-    val clarification: String? = null
+    val snoozeMinutes: Int = 5
 )
 
 class AlarmEditorViewModel(
     private val repository: AlarmRepository,
     private val scheduler: AlarmScheduler,
     private val preferences: AppPreferences,
-    private val interpreter: AiAlarmInterpreter,
     private val alarmId: Long,
     private val prefillHour: Int? = null,
     private val prefillMinute: Int? = null,
@@ -64,6 +63,7 @@ class AlarmEditorViewModel(
                         minute = alarm.minute,
                         label = alarm.label,
                         repeatDays = alarm.repeatDays,
+                        oneTimeDate = alarm.oneTimeDate,
                         vibrate = alarm.vibrate,
                         snoozeMinutes = alarm.snoozeMinutes
                     )
@@ -88,55 +88,35 @@ class AlarmEditorViewModel(
     fun toggleDay(day: DayOfWeek) = _uiState.update { state ->
         val days = state.repeatDays.toMutableSet()
         if (!days.add(day)) days.remove(day)
-        state.copy(repeatDays = days)
+        // Selecting any repeat day makes this a repeating alarm, which can never
+        // carry a one-time date.
+        state.copy(repeatDays = days, oneTimeDate = if (days.isEmpty()) state.oneTimeDate else null)
+    }
+
+    /** Pins an explicit calendar date for a one-time alarm (repeatDays must be empty). */
+    fun setOneTimeDate(date: LocalDate?) = _uiState.update { state ->
+        check(state.repeatDays.isEmpty()) { "A repeating alarm cannot have a one-time date" }
+        state.copy(oneTimeDate = date)
     }
 
     fun setVibrate(vibrate: Boolean) = _uiState.update { it.copy(vibrate = vibrate) }
     fun setSnooze(minutes: Int) = _uiState.update { it.copy(snoozeMinutes = minutes) }
 
     /**
-     * Applies a natural-language description to the editor fields ONLY.
-     * Never schedules. Tries the server-side PromptHaven AI proxy first and
-     * falls back to the offline parser when the backend is unreachable or
-     * unconfigured, so this always works without network/AI. Manual editing
-     * and SAVE remain the only way an alarm is ever scheduled.
+     * Copies a structured AI preview into the editor fields ONLY.
+     * Never schedules. This runs when the user taps APPLY TO ALARM on the AI
+     * Preview screen; the alarm is only ever scheduled by the editor's SAVE.
      */
-    fun applyNaturalLanguage(text: String) {
-        val trimmed = text.trim()
-        if (trimmed.isBlank()) return
-        viewModelScope.launch {
-            val result = interpreter.interpret(trimmed)
-            when (result) {
-                is AlarmInterpretResult.Alarm -> {
-                    _uiState.update {
-                        it.copy(
-                            hour = result.hour,
-                            minute = result.minute,
-                            repeatDays = result.repeatDays,
-                            clarification = null
-                        )
-                    }
-                }
-                is AlarmInterpretResult.NeedsClarification -> {
-                    _uiState.update { it.copy(clarification = result.message) }
-                }
-                is AlarmInterpretResult.Failed -> {
-                    applyOffline(trimmed)
-                }
-            }
-        }
-    }
-
-    fun dismissClarification() = _uiState.update { it.copy(clarification = null) }
-
-    private fun applyOffline(text: String) {
-        val parsed = NaturalLanguageParser.parse(text) ?: return
+    fun applyAiPreview(preview: AiPreviewResult) {
         _uiState.update {
             it.copy(
-                hour = parsed.hour,
-                minute = parsed.minute,
-                repeatDays = parsed.repeatDays,
-                clarification = null
+                hour = preview.hour,
+                minute = preview.minute,
+                label = preview.label.ifBlank { it.label },
+                repeatDays = preview.repeatDays,
+                // Only a one-time alarm may carry a pinned date; a repeating
+                // interpretation clears it to keep the invariant.
+                oneTimeDate = if (preview.repeatDays.isEmpty()) preview.date else null
             )
         }
     }
@@ -153,6 +133,7 @@ class AlarmEditorViewModel(
                     minute = state.minute,
                     label = state.label.ifBlank { "Alarm" },
                     repeatDays = state.repeatDays,
+                    oneTimeDate = if (state.repeatDays.isEmpty()) state.oneTimeDate else null,
                     vibrate = state.vibrate,
                     snoozeMinutes = state.snoozeMinutes,
                     updatedAt = now
@@ -191,6 +172,7 @@ class AlarmEditorViewModel(
         vibrate = _uiState.value.vibrate,
         soundUri = null,
         snoozeMinutes = _uiState.value.snoozeMinutes,
+        oneTimeDate = if (_uiState.value.repeatDays.isEmpty()) _uiState.value.oneTimeDate else null,
         createdAt = now,
         updatedAt = now
     )
@@ -209,7 +191,6 @@ class AlarmEditorViewModel(
                         repository = container.alarmRepository,
                         scheduler = container.alarmScheduler,
                         preferences = container.appPreferences,
-                        interpreter = container.aiAlarmInterpreter,
                         alarmId = alarmId,
                         prefillHour = prefillHour,
                         prefillMinute = prefillMinute,

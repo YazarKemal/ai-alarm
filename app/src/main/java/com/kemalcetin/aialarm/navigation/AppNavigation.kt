@@ -1,5 +1,6 @@
 package com.kemalcetin.aialarm.navigation
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -7,6 +8,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.kemalcetin.aialarm.di.AppContainer
+import com.kemalcetin.aialarm.ui.aipreview.AiPreviewScreen
+import com.kemalcetin.aialarm.ui.aipreview.AiPreviewViewModel
 import com.kemalcetin.aialarm.ui.alarmeditor.AlarmEditorScreen
 import com.kemalcetin.aialarm.ui.clock.ClockStyleScreen
 import com.kemalcetin.aialarm.ui.home.HomeScreen
@@ -26,12 +29,19 @@ object Routes {
         "$EDITOR/{$EDITOR_ARG_ALARM_ID}?$EDITOR_ARG_HOUR={$EDITOR_ARG_HOUR}" +
             "&$EDITOR_ARG_MINUTE={$EDITOR_ARG_MINUTE}&$EDITOR_ARG_DAYS={$EDITOR_ARG_DAYS}"
 
+    const val AI_PREVIEW = "ai_preview"
+    const val AI_PREVIEW_ARG_TEXT = "text"
+    const val AI_PREVIEW_ROUTE = "$AI_PREVIEW/{$AI_PREVIEW_ARG_TEXT}"
+
     fun editor(alarmId: Long): String = "$EDITOR/$alarmId"
 
     /** Editor route pre-filled from an AI suggestion (only meaningful for a new alarm). */
     fun editorSuggestion(hour: Int, minute: Int, days: Set<DayOfWeek>): String =
         "$EDITOR/-1?suggestHour=$hour&suggestMinute=$minute&suggestDays=" +
             days.joinToString(",") { it.value.toString() }
+
+    /** AI Preview route carrying the user's natural-language description. */
+    fun aiPreview(text: String): String = "$AI_PREVIEW/${Uri.encode(text)}"
 }
 
 @Composable
@@ -102,9 +112,37 @@ fun AppNavigation(container: AppContainer) {
                 container = container,
                 alarmId = alarmId,
                 onDone = { navController.popBackStack() },
+                onOpenAiPreview = { text ->
+                    navController.navigate(Routes.aiPreview(text))
+                },
+                savedStateHandle = backStackEntry.savedStateHandle,
                 prefillHour = suggestHour,
                 prefillMinute = suggestMinute,
                 prefillDays = suggestDays
+            )
+        }
+
+        composable(
+            route = Routes.AI_PREVIEW_ROUTE,
+            arguments = listOf(
+                navArgument(Routes.AI_PREVIEW_ARG_TEXT) {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val text = backStackEntry.arguments?.getString(Routes.AI_PREVIEW_ARG_TEXT) ?: ""
+            AiPreviewScreen(
+                container = container,
+                text = text,
+                onBack = { navController.popBackStack() },
+                onApply = { result ->
+                    // Return the preview to the editor and pop back. Applying never
+                    // saves or schedules; the editor's SAVE is the only scheduler.
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(AiPreviewViewModel.AI_PREVIEW_RESULT_KEY, result)
+                    navController.popBackStack()
+                }
             )
         }
     }

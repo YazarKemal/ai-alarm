@@ -85,6 +85,8 @@ fun AlarmEditorScreen(
     container: AppContainer,
     alarmId: Long,
     onDone: () -> Unit,
+    onOpenAiPreview: (String) -> Unit,
+    savedStateHandle: androidx.lifecycle.SavedStateHandle,
     prefillHour: Int? = null,
     prefillMinute: Int? = null,
     prefillDays: Set<DayOfWeek>? = null
@@ -103,7 +105,21 @@ fun AlarmEditorScreen(
     var aiExpanded by remember { mutableStateOf(false) }
     var aiInput by remember { mutableStateOf("") }
 
-    val nextOccurrence = remember(uiState.hour, uiState.minute, uiState.repeatDays) {
+    // Consume an applied AI preview returned from the preview screen.
+    val aiPreviewResult by savedStateHandle
+        .getStateFlow<com.kemalcetin.aialarm.ui.aipreview.AiPreviewResult?>(
+            com.kemalcetin.aialarm.ui.aipreview.AiPreviewViewModel.AI_PREVIEW_RESULT_KEY,
+            null
+        )
+        .collectAsStateWithLifecycle()
+    LaunchedEffect(aiPreviewResult) {
+        if (aiPreviewResult != null) {
+            viewModel.applyAiPreview(aiPreviewResult!!)
+            savedStateHandle[com.kemalcetin.aialarm.ui.aipreview.AiPreviewViewModel.AI_PREVIEW_RESULT_KEY] = null
+        }
+    }
+
+    val nextOccurrence = remember(uiState.hour, uiState.minute, uiState.repeatDays, uiState.oneTimeDate) {
         container.nextAlarmCalculator.nextTrigger(
             Alarm(
                 id = 0L,
@@ -115,6 +131,7 @@ fun AlarmEditorScreen(
                 vibrate = true,
                 soundUri = null,
                 snoozeMinutes = uiState.snoozeMinutes,
+                oneTimeDate = if (uiState.repeatDays.isEmpty()) uiState.oneTimeDate else null,
                 createdAt = Instant.now(),
                 updatedAt = Instant.now()
             ),
@@ -164,19 +181,15 @@ fun AlarmEditorScreen(
             AiNaturalLanguageCard(
                 expanded = aiExpanded,
                 input = aiInput,
-                clarification = uiState.clarification,
-                onToggle = {
-                    aiExpanded = !aiExpanded
-                    viewModel.dismissClarification()
-                },
-                onInputChange = {
-                    aiInput = it
-                    viewModel.dismissClarification()
-                },
-                onApply = {
-                    viewModel.applyNaturalLanguage(aiInput)
-                    aiExpanded = false
-                    aiInput = ""
+                onToggle = { aiExpanded = !aiExpanded },
+                onInputChange = { aiInput = it },
+                onPreview = {
+                    val trimmed = aiInput.trim()
+                    if (trimmed.isNotBlank()) {
+                        onOpenAiPreview(trimmed)
+                        aiExpanded = false
+                        aiInput = ""
+                    }
                 }
             )
 
@@ -360,10 +373,9 @@ private fun TimeHeroCard(
 private fun AiNaturalLanguageCard(
     expanded: Boolean,
     input: String,
-    clarification: String?,
     onToggle: () -> Unit,
     onInputChange: (String) -> Unit,
-    onApply: () -> Unit
+    onPreview: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -423,21 +435,12 @@ private fun AiNaturalLanguageCard(
                     .padding(horizontal = PhSpacing.md),
                 shape = RoundedCornerShape(PhRadius.button)
             )
-            if (clarification != null) {
-                Spacer(Modifier.height(PhSpacing.sm))
-                Text(
-                    text = clarification,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = PhSpacing.md),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
             Spacer(Modifier.height(PhSpacing.sm))
+            // Opens the structured AI Preview screen (not a chatbot); the preview's
+            // APPLY TO ALARM returns the result here. This never schedules.
             PhPrimaryButton(
-                text = stringResource(R.string.apply_to_alarm),
-                onClick = onApply,
+                text = stringResource(R.string.preview),
+                onClick = onPreview,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = PhSpacing.md)

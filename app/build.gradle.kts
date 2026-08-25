@@ -20,12 +20,28 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Non-secret, build-time configurable backend base URL. Debug points
+            // at the local Firebase emulator by default; override with the
+            // PROMPTHAVEN_FUNCTIONS_DEBUG_URL Gradle property if you need a
+            // different emulator/project. The URL is public, never a secret.
+            val debugUrl = providers.gradleProperty("PROMPTHAVEN_FUNCTIONS_DEBUG_URL")
+                .getOrElse("http://10.0.2.2:5001")
+            buildConfigField("String", "PROMPTHAVEN_FUNCTIONS_BASE_URL", "\"$debugUrl\"")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Production URL is supplied at build time via the PROMPTHAVEN_FUNCTIONS_URL
+            // Gradle property (a public value, not a secret). It is intentionally left
+            // blank by default so no fake/placeholder region-project URL ships in the APK;
+            // the AI proxy is simply "not configured" until the deployer sets it.
+            val releaseUrl = providers.gradleProperty("PROMPTHAVEN_FUNCTIONS_URL")
+                .getOrElse("")
+            buildConfigField("String", "PROMPTHAVEN_FUNCTIONS_BASE_URL", "\"$releaseUrl\"")
         }
     }
 

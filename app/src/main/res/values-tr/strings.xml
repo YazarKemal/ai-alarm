@@ -98,4 +98,9 @@
     <string name="privacy">Gizlilik</string>
     <string name="open_source_licenses">Açık kaynak lisansları</string>
     <string name="ecosystem_footer">PromptHavenAI ekosisteminin parçası</string>
+    <string name="back">Geri</string>
+    <string name="ai_preview">AI Önizleme</string>
+    <string name="retry">Tekrar dene</string>
+    <string name="refine_request">İsteği düzenle</string>
+    <string name="preview">Önizle</string>
 </resources>
