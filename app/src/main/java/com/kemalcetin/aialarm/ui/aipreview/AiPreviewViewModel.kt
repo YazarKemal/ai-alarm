@@ -13,6 +13,8 @@ import com.kemalcetin.aialarm.domain.model.Alarm
 import com.kemalcetin.aialarm.domain.repository.AlarmRepository
 import com.kemalcetin.aialarm.feature.assistant.network.AiAlarmInterpreter
 import com.kemalcetin.aialarm.feature.assistant.network.AlarmInterpretResult
+import com.kemalcetin.aialarm.feature.assistant.network.ClarificationResolver
+import com.kemalcetin.aialarm.feature.assistant.network.ClarificationTurn
 import com.kemalcetin.aialarm.ui.alarmeditor.NaturalLanguageParser
 import java.time.Instant
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -49,7 +51,8 @@ class AiPreviewViewModel(
     private val scheduler: AlarmScheduler,
     private val preferences: AppPreferences,
     private val text: String,
-    private val defaultLabel: String
+    private val defaultLabel: String,
+    private val stringResolver: (Int) -> String
 ) : ViewModel() {
 
     data class UiState(
@@ -57,7 +60,10 @@ class AiPreviewViewModel(
         val result: AlarmInterpretResult? = null,
         val error: String? = null,
         val clarificationInput: String = "",
-        val conversation: List<String> = emptyList(),
+        /** The clarification currently awaiting an answer (code + shown question). */
+        val pendingClarification: ClarificationTurn? = null,
+        /** Structured history of answered clarifications, kept only in memory. */
+        val clarificationHistory: List<ClarificationTurn> = emptyList(),
         val planAlarmEnabled: Set<Int> = emptySet(),
         val creating: Boolean = false
     )
@@ -77,11 +83,19 @@ class AiPreviewViewModel(
     fun onClarificationInputChange(value: String) =
         _uiState.update { it.copy(clarificationInput = value) }
 
-    /** Resubmits the original request plus the clarification answer. */
+    /** Resubmits the original request plus a structured clarification answer. */
     fun submitClarification() {
         val answer = _uiState.value.clarificationInput.trim()
         if (answer.isBlank()) return
-        _uiState.update { it.copy(conversation = it.conversation + answer, clarificationInput = "") }
+        val pending = _uiState.value.pendingClarification ?: return
+        val turn = pending.copy(answer = answer)
+        _uiState.update {
+            it.copy(
+                clarificationHistory = it.clarificationHistory + turn,
+                clarificationInput = "",
+                pendingClarification = null
+            )
+        }
         runInterpretation()
     }
 
@@ -135,15 +149,31 @@ class AiPreviewViewModel(
 
     private fun runInterpretation() {
         viewModelScope.launch {
-            val conversation = _uiState.value.conversation
+            val history = _uiState.value.clarificationHistory
             _uiState.update { it.copy(loading = true, result = null, error = null) }
-            when (val result = interpreter.interpret(text, conversation)) {
+            when (val result = interpreter.interpret(text, history)) {
                 is AlarmInterpretResult.GoalPlan -> {
                     val enabled = result.alarms.mapIndexedNotNull { i, a -> if (a.enabled) i else null }.toSet()
                     _uiState.update { it.copy(loading = false, result = result, planAlarmEnabled = enabled) }
                 }
-                is AlarmInterpretResult.Alarm,
                 is AlarmInterpretResult.NeedsClarification -> {
+                    // Localize known codes client-side and escalate the anti-loop
+                    // prompt; the backend message is only a fallback for unknown codes.
+                    val pending = ClarificationResolver.resolve(
+                        result.code,
+                        result.message,
+                        history,
+                        stringResolver
+                    )
+                    _uiState.update {
+                        it.copy(
+                            loading = false,
+                            result = result,
+                            pendingClarification = pending
+                        )
+                    }
+                }
+                is AlarmInterpretResult.Alarm -> {
                     _uiState.update { it.copy(loading = false, result = result) }
                 }
                 is AlarmInterpretResult.Failed -> {
@@ -193,7 +223,8 @@ class AiPreviewViewModel(
                         text = text,
                         defaultLabel = container.appContext.getString(
                             com.kemalcetin.aialarm.R.string.alarm_default_label
-                        )
+                        ),
+                        stringResolver = { container.appContext.getString(it) }
                     )
                 }
             }

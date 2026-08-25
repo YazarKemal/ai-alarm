@@ -149,4 +149,6 @@
 
     <!-- Theme label -->
     <string name="theme_auto">Automatisch</string>
+    <string name="ai_clarification_commute_required">Wie lange brauchst du normalerweise, um dorthin zu kommen?</string>
+    <string name="ai_clarification_commute_minutes_required">Kannst du die Fahrzeit in Minuten angeben? Zum Beispiel: 60 Minuten.</string>
 </resources>

@@ -4,6 +4,7 @@ import com.kemalcetin.aialarm.core.planning.AiPlanningPreferences
 import java.time.DayOfWeek
 import java.time.LocalDate
 import kotlinx.coroutines.runBlocking
+import org.json.JSONArray
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -303,7 +304,7 @@ class PromptHavenAiAlarmInterpreterTest {
     }
 
     @Test
-    fun `request body carries planning preferences and conversation`() {
+    fun `request body carries planning preferences and structured clarifications`() {
         val prefs = AiPlanningPreferences(
             targetSleepMinutes = 420,
             preparationMinutes = 20,
@@ -313,13 +314,58 @@ class PromptHavenAiAlarmInterpreterTest {
         val body = interpreter.buildRequestBody(
             text = "arrive by 9",
             preferences = prefs,
-            conversation = listOf("40 minutes")
+            clarifications = listOf(
+                ClarificationTurn("commute_required", "How long does it take?", "40 minutes")
+            )
         )
         assertTrue(body.contains("\"targetSleepMinutes\":420"))
         assertTrue(body.contains("\"preparationMinutes\":20"))
         assertTrue(body.contains("\"commuteMinutes\":35"))
         assertTrue(body.contains("\"bufferMinutes\":10"))
-        assertTrue(body.contains("\"content\":\"40 minutes\""))
-        assertTrue(body.contains("\"conversation\""))
+        assertTrue(body.contains("\"clarifications\""))
+        assertTrue(body.contains("\"code\":\"commute_required\""))
+        assertTrue(body.contains("\"question\":\"How long does it take?\""))
+        assertTrue(body.contains("\"answer\":\"40 minutes\""))
+        // The obsolete string-list conversation format is gone.
+        assertFalse(body.contains("\"conversation\""))
+        assertFalse(body.contains("\"role\":\"user\""))
+    }
+
+    // ---- Structured clarifications ----
+
+    @Test
+    fun `structured clarification serializes code question and answer`() {
+        val arr: JSONArray = listOf(
+            ClarificationTurn("commute_required", "Q?", "1 saat kadar")
+        ).toClarificationsRequestBody()
+        assertEquals(1, arr.length())
+        val obj = arr.getJSONObject(0)
+        assertEquals("commute_required", obj.getString("code"))
+        assertEquals("Q?", obj.getString("question"))
+        assertEquals("1 saat kadar", obj.getString("answer"))
+    }
+
+    @Test
+    fun `clarification with null code serializes a null code`() {
+        val arr: JSONArray = listOf(
+            ClarificationTurn(null, "Which day?", "tomorrow")
+        ).toClarificationsRequestBody()
+        assertEquals(1, arr.length())
+        assertTrue(arr.getJSONObject(0).isNull("code"))
+        assertEquals("Which day?", arr.getJSONObject(0).getString("question"))
+    }
+
+    @Test
+    fun `selected app locale is still sent with clarifications`() {
+        val localized = PromptHavenAiAlarmInterpreter(
+            baseUrl = "http://x",
+            localeProvider = { "tr-TR" }
+        )
+        val body = localized.buildRequestBody(
+            text = "okulda olmam lazım",
+            clarifications = listOf(ClarificationTurn("commute_required", "q", "1 saat"))
+        )
+        assertTrue(body.contains("\"locale\":\"tr-TR\""))
+        assertTrue(body.contains("\"clarifications\""))
     }
 }

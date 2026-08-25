@@ -149,4 +149,6 @@
 
     <!-- Theme label -->
     <string name="theme_auto">Otomatik</string>
+    <string name="ai_clarification_commute_required">Oraya ulaşman genellikle kaç dakika sürüyor?</string>
+    <string name="ai_clarification_commute_minutes_required">Yolculuk süresini dakika olarak yazar mısın? Örneğin: 60 dakika.</string>
 </resources>

@@ -1,6 +1,5 @@
 package com.kemalcetin.aialarm.core.planning
 
-import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -33,11 +32,3 @@ data class AiPlanningPreferences(
 }
 
 enum class WakePreference { LATEST_POSSIBLE, BALANCED, EARLY }
-
-/** Minimal recent-turn conversation state kept only in the ViewModel. */
-fun List<String>.toConversationRequestBody(): JSONArray =
-    JSONArray().apply {
-        forEach { answer ->
-            put(JSONObject().put("role", "user").put("content", answer))
-        }
-    }

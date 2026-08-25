@@ -139,8 +139,12 @@ fun AiPreviewScreen(
                 }
                 state.result is AlarmInterpretResult.NeedsClarification -> {
                     val question = (state.result as AlarmInterpretResult.NeedsClarification)
+                    // Prefer the client-localized (and anti-loop escalated) question
+                    // held in pendingClarification; backend message is a fallback.
+                    val displayQuestion = state.pendingClarification?.question?.takeIf { it.isNotBlank() }
+                        ?: question.message
                     ClarificationCard(
-                        question = question.message,
+                        question = displayQuestion,
                         input = state.clarificationInput,
                         onInputChange = viewModel::onClarificationInputChange,
                         onSubmit = viewModel::submitClarification

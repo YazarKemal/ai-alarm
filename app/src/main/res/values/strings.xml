@@ -151,4 +151,6 @@
 
     <!-- Theme label -->
     <string name="theme_auto">Auto</string>
+    <string name="ai_clarification_commute_required">How long does it usually take you to get there?</string>
+    <string name="ai_clarification_commute_minutes_required">Please enter the travel time in minutes, for example: 60 minutes.</string>
 </resources>

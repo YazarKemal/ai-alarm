@@ -2,7 +2,6 @@ package com.kemalcetin.aialarm.feature.assistant.network
 
 import com.kemalcetin.aialarm.BuildConfig
 import com.kemalcetin.aialarm.core.planning.AiPlanningPreferences
-import com.kemalcetin.aialarm.core.planning.toConversationRequestBody
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -84,11 +83,13 @@ data class PlanAlarm(
  */
 interface AiAlarmInterpreter {
     /**
-     * [conversation] is a short, in-memory list of clarification answers
-     * (each a user turn) resubmitted so the model can fill a previously-missing
-     * value (e.g. commute). Never a full transcript.
+     * [clarifications] is a short, in-memory list of STRUCTURED clarification
+     * exchanges (each carrying the code, the localized question shown, and the
+     * user's answer) resubmitted so the backend can fill a previously-missing
+     * value (e.g. commute) deterministically — never re-asking the same question
+     * in a loop. Never a full transcript.
      */
-    suspend fun interpret(text: String, conversation: List<String> = emptyList()): AlarmInterpretResult
+    suspend fun interpret(text: String, clarifications: List<ClarificationTurn> = emptyList()): AlarmInterpretResult
 }
 
 class PromptHavenAiAlarmInterpreter(
@@ -111,14 +112,14 @@ class PromptHavenAiAlarmInterpreter(
     private val planningPreferencesProvider: suspend () -> AiPlanningPreferences = { AiPlanningPreferences() }
 ) : AiAlarmInterpreter {
 
-    override suspend fun interpret(text: String, conversation: List<String>): AlarmInterpretResult =
+    override suspend fun interpret(text: String, clarifications: List<ClarificationTurn>): AlarmInterpretResult =
         withContext(Dispatchers.IO) {
             try {
                 if (baseUrl.isBlank()) {
                     return@withContext AlarmInterpretResult.Failed("AI proxy not configured")
                 }
                 val preferences = planningPreferencesProvider()
-                val body = buildRequestBody(text, preferences = preferences, conversation = conversation)
+                val body = buildRequestBody(text, preferences = preferences, clarifications = clarifications)
 
                 val appCheckToken = tokenProvider?.getToken()
                 val request = buildRequest("$baseUrl/interpretAlarmRequest", body, appCheckToken)
@@ -147,7 +148,7 @@ class PromptHavenAiAlarmInterpreter(
 
     /**
      * Builds the V2 request body: text + context + local planning preferences +
-     * a small recent clarification conversation.
+     * a short, structured clarification history.
      */
     internal fun buildRequestBody(
         text: String,
@@ -155,14 +156,14 @@ class PromptHavenAiAlarmInterpreter(
         locale: String = localeProvider(),
         currentDateTime: String = OffsetDateTime.now().toString(),
         preferences: AiPlanningPreferences = AiPlanningPreferences(),
-        conversation: List<String> = emptyList()
+        clarifications: List<ClarificationTurn> = emptyList()
     ): String = JSONObject()
         .put("text", text.take(MAX_TEXT_LENGTH))
         .put("timezone", timezone)
         .put("locale", locale)
         .put("currentDateTime", currentDateTime)
         .put("preferences", preferences.toRequestBody())
-        .put("conversation", conversation.toConversationRequestBody())
+        .put("clarifications", clarifications.toClarificationsRequestBody())
         .toString()
 
     /**

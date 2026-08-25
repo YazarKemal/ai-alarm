@@ -13,6 +13,21 @@
  *   - a GOAL_PLAN (computed wake plan with up to 3 alarms), or
  *   - CLARIFICATION_REQUIRED (missing critical info, phrased in the user's locale).
  *
+ * Clarifications are STRUCTURED and anti-loop:
+ *   - The client sends `clarifications: [{ code, question, answer }]`. The
+ *     backend knows exactly which answer belongs to which missing value, so a
+ *     valid commute answer is consumed deterministically and planning proceeds
+ *     immediately — the same generic question is never re-asked.
+ *   - Provider messages always follow the semantic order:
+ *       SYSTEM, USER original request, [ASSISTANT question, USER answer] per
+ *       clarification.
+ *   - Known clarification codes (commute_required, commute_minutes_required)
+ *     are LOCALIZED on the client; the backend `clarificationQuestion` string is
+ *     only a fallback for unknown codes.
+ *   - Locale is normalized to a canonical BCP-47 primary tag (tr-TR -> tr,
+ *     en-US -> en, pt-BR stays pt-BR) so questions never fall back to English
+ *     by accident.
+ *
  * Security posture:
  *   - Provider key via secret; model via PROVIDER_MODEL env (default
  *     deepseek-v4-flash). Never exposed to Android.
@@ -31,6 +46,18 @@ import * as https from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { defineSecret } from "firebase-functions/params";
 import { plan, MIN_MS } from "./planner";
+import {
+  normalizeLocale,
+  parseClarifications,
+  buildProviderTurns,
+  resolveCommute,
+  clarificationQuestion,
+  COMMUTE_MIN,
+  COMMUTE_MAX,
+  MAX_TEXT_LENGTH,
+  type Clarification,
+  type ClarificationCode,
+} from "./logic";
 
 initializeApp();
 
@@ -46,40 +73,14 @@ const RATE_LIMIT_PER_MINUTE = Number(process.env.RATE_LIMIT_PER_MINUTE ?? 60);
 const APP_CHECK_HEADER = "x-firebase-app-check";
 const RATE_WINDOW_MS = 60_000;
 
-const MAX_TEXT_LENGTH = 500;
 const MAX_LABEL_LENGTH = 80;
 const MAX_PLAN_ALARMS = 3;
 
 // -------- hard validation limits --------
 const SLEEP_MIN = 240, SLEEP_MAX = 720;
 const PREP_MIN = 0, PREP_MAX = 360;
-const COMMUTE_MIN = 0, COMMUTE_MAX = 480;
 const BUFFER_MIN = 0, BUFFER_MAX = 180;
 const PRE_BACKUP_MIN = 0, PRE_BACKUP_MAX = 60;
-
-type Locale = string;
-type ClarificationCode = "commute_required";
-
-const COMMUTE_QUESTIONS: Record<string, string> = {
-  en: "How long does it usually take you to get there?",
-  tr: "Oraya ulaşman genellikle kaç dakika sürüyor?",
-  es: "¿Cuánto tiempo sueles tardar en llegar?",
-  "pt-BR": "Quanto tempo você normalmente leva para chegar lá?",
-  de: "Wie lange brauchst du normalerweise, um dorthin zu kommen?",
-  fr: "Combien de temps vous faut-il habituellement pour y arriver ?",
-  it: "Quanto tempo impieghi di solito ad arrivare?",
-  id: "Berapa lama biasanya kamu sampai ke sana?",
-  hi: "आपको वहाँ पहुँचने में आमतौर पर कितना समय लगता है?",
-  ja: "そこまで通常どれくらいかかりますか？",
-  ko: "거기까지 보통 얼마나 걸리나요?",
-  ar: "كم يستغرق وصولك إلى هناك عادة؟",
-};
-
-function commuteQuestion(locale: string): string {
-  const base = locale.toLowerCase();
-  const match = base === "pt-br" ? "pt-BR" : COMMUTE_QUESTIONS[base];
-  return match ?? COMMUTE_QUESTIONS.en;
-}
 
 /** In-memory per-IP sliding-window limiter (per function instance). */
 const buckets = new Map<string, { count: number; resetAt: number }>();
@@ -234,8 +235,14 @@ function arrivalEpochMs(dateStr: string, timeStr: string, offsetMinutes: number)
 }
 
 /** Builds the system prompt so the model extracts constraints, never times. */
-function buildExtractionPrompt(timezone: string, locale: string, currentDateTime: string, prefs: Preferences): string {
-  return [
+function buildExtractionPrompt(
+  timezone: string,
+  locale: string,
+  currentDateTime: string,
+  prefs: Preferences,
+  activeClarification: Clarification | null
+): string {
+  const lines = [
     "You are the Planner for the Smart Alarm Clock app. You extract structured constraints from the user's natural language. You never compute final alarm times — code does that.",
     `Reference timestamp (ISO-8601): ${currentDateTime}`,
     `User timezone: ${timezone}`,
@@ -262,30 +269,29 @@ function buildExtractionPrompt(timezone: string, locale: string, currentDateTime
     "- Use 24-hour time. If you cannot resolve a date or time, reply instead:",
     `{"clarificationQuestion":"one short question in the user's language to disambiguate"}`,
     "Do not include anything except the JSON.",
-  ].join("\n");
+  ];
+  if (activeClarification) {
+    lines.push(
+      "",
+      "The assistant previously asked the user a clarifying question, and the user answered:",
+      `Assistant question: "${activeClarification.question}"`,
+      `User answer: "${activeClarification.answer}"`,
+      "- If the user's answer expresses a travel duration (commute), set commuteMinutes to that duration in minutes.",
+      "- Otherwise leave commuteMinutes null.",
+      "- Do NOT ask for this clarification again."
+    );
+  }
+  return lines.join("\n");
 }
 
 // ---------------------------------------------------------------------------
 // Provider call (DeepSeek v4 flash, non-thinking)
 // ---------------------------------------------------------------------------
 
-async function callProvider(prompt: string, systemPrompt: string, apiKey: string, conversation: unknown[]): Promise<string> {
+async function callProvider(systemPrompt: string, turns: Array<{ role: string; content: string }>, apiKey: string): Promise<string> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15000);
-  const messages: Array<{ role: string; content: string }> = [
-    { role: "system", content: systemPrompt },
-  ];
-  if (Array.isArray(conversation) && conversation.length > 0) {
-    // Small recent context only — enough for one clarification turn. Never a
-    // full transcript, and the endpoint stays stateless (no server DB).
-    for (const item of conversation.slice(-4)) {
-      const entry = (item ?? {}) as { role?: unknown; content?: unknown };
-      const role = entry.role === "assistant" ? "assistant" : "user";
-      const content = typeof entry.content === "string" ? entry.content : String(entry.content ?? "");
-      if (content) messages.push({ role, content: content.slice(0, MAX_TEXT_LENGTH) });
-    }
-  }
-  messages.push({ role: "user", content: prompt });
+  const messages: Array<{ role: string; content: string }> = [{ role: "system", content: systemPrompt }, ...turns];
   try {
     const response = await fetch(PROVIDER_ENDPOINT, {
       method: "POST",
@@ -384,7 +390,7 @@ export const interpretAlarmRequest = https.onRequest(
       const locale = typeof body.locale === "string" ? body.locale : "";
       const currentDateTime = typeof body.currentDateTime === "string" ? body.currentDateTime : "";
       const preferences = parsePreferences(body.preferences);
-      const conversation = Array.isArray(body.conversation) ? body.conversation : [];
+      const clarifications = parseClarifications(body.clarifications);
 
       if (text.trim().length === 0) {
         res.status(400).json({ error: "empty_text" });
@@ -395,13 +401,21 @@ export const interpretAlarmRequest = https.onRequest(
         return;
       }
 
+      const normalizedLocale = normalizeLocale(locale);
       const offset = offsetMinutes(currentDateTime);
 
+      // The commute is the only value we solicit. Pick the most recent commute
+      // clarification so a structured answer is consumed deterministically.
+      const commuteClarifications = clarifications.filter(
+        (c) => c.code === "commute_required" || c.code === "commute_minutes_required"
+      );
+      const activeClarification = commuteClarifications[commuteClarifications.length - 1] ?? null;
+
+      const turns = buildProviderTurns(text, clarifications);
       const providerResult = await callProvider(
-        text,
-        buildExtractionPrompt(timezone, locale, currentDateTime, preferences),
-        PROVIDER_API_KEY.value(),
-        conversation
+        buildExtractionPrompt(timezone, normalizedLocale, currentDateTime, preferences, activeClarification),
+        turns,
+        PROVIDER_API_KEY.value()
       );
 
       const parsed = sanitizeExtraction(providerResult);
@@ -445,18 +459,26 @@ export const interpretAlarmRequest = https.onRequest(
         return;
       }
 
-      const commute = preferences.commuteMinutes ?? extraction.commuteMinutes;
-      if (commute === null) {
-        // Critical missing info: commute is required for an arrive-by goal and
-        // none is saved. Ask, in the user's locale, rather than guessing.
+      // Resolve commute in priority order (saved pref -> deterministic parse of
+      // the answer -> model extraction), every source range-checked 0..480. If
+      // none yields a value, escalate to the explicit minutes prompt rather than
+      // re-asking the same generic commute question.
+      const resolution = resolveCommute(
+        preferences.commuteMinutes,
+        activeClarification,
+        extraction.commuteMinutes
+      );
+      if (resolution.commuteMinutes === null) {
+        const code = resolution.escalationCode ?? "commute_required";
         res.json({
           status: "clarification_required",
-          clarificationCode: "commute_required",
-          clarificationQuestion: commuteQuestion(locale),
+          clarificationCode: code,
+          clarificationQuestion: clarificationQuestion(code, locale),
           needsClarification: true,
         } satisfies PlanResponse);
         return;
       }
+      const commute = resolution.commuteMinutes;
 
       const preparation = extraction.preparationMinutes ?? preferences.preparationMinutes;
       const sleep = clampInt(extraction.requestedSleepMinutes ?? preferences.targetSleepMinutes, preferences.targetSleepMinutes, SLEEP_MIN, SLEEP_MAX);

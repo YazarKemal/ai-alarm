@@ -149,4 +149,6 @@
 
     <!-- Theme label -->
     <string name="theme_auto">자동</string>
+    <string name="ai_clarification_commute_required">거기까지 보통 얼마나 걸리나요?</string>
+    <string name="ai_clarification_commute_minutes_required">이동 시간을 분 단위로 입력해 주시겠어요? 예: 60분.</string>
 </resources>

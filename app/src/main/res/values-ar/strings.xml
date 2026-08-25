@@ -149,4 +149,6 @@
 
     <!-- Theme label -->
     <string name="theme_auto">تلقائي</string>
+    <string name="ai_clarification_commute_required">كم يستغرق وصولك إلى هناك عادة؟</string>
+    <string name="ai_clarification_commute_minutes_required">هل يمكنك كتابة وقت السفر بالدقائق؟ على سبيل المثال: 60 دقيقة.</string>
 </resources>

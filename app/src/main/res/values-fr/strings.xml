@@ -149,4 +149,6 @@
 
     <!-- Theme label -->
     <string name="theme_auto">Automatique</string>
+    <string name="ai_clarification_commute_required">Combien de temps vous faut-il habituellement pour y arriver ?</string>
+    <string name="ai_clarification_commute_minutes_required">Peux-tu écrire le temps de trajet en minutes ? Par exemple : 60 minutes.</string>
 </resources>

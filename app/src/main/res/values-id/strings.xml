@@ -149,4 +149,6 @@
 
     <!-- Theme label -->
     <string name="theme_auto">Otomatis</string>
+    <string name="ai_clarification_commute_required">Berapa lama biasanya kamu sampai ke sana?</string>
+    <string name="ai_clarification_commute_minutes_required">Bisakah kamu menuliskan waktu perjalanan dalam menit? Contoh: 60 menit.</string>
 </resources>

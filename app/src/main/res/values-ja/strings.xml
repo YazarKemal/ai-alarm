@@ -149,4 +149,6 @@
 
     <!-- Theme label -->
     <string name="theme_auto">自動</string>
+    <string name="ai_clarification_commute_required">そこまで通常どれくらいかかりますか？</string>
+    <string name="ai_clarification_commute_minutes_required">移動時間を分で入力してもらえますか？例：60分。</string>
 </resources>
