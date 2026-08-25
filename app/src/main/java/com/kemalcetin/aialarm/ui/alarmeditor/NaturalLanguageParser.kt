@@ -42,8 +42,11 @@ object NaturalLanguageParser {
         if (hour == null || minute == null || minute !in 0..59) return null
 
         val lower = t.lowercase()
+        // Split on non-letters so whole-word matching works for both ASCII and
+        // accented (Turkish) words, which \b word boundaries would miss.
+        val tokens = lower.split(Regex("[^a-zçğıöşü]+"))
         val days = dayWords.entries
-            .filter { (word, _) -> Regex("\\b$word\\b").containsMatchIn(lower) }
+            .filter { (word, _) -> word in tokens }
             .map { it.value }
             .toSet()
 

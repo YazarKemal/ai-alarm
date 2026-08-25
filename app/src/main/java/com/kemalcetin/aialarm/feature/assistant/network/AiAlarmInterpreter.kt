@@ -77,7 +77,7 @@ class PromptHavenAiAlarmInterpreter(
      * Never trust AI JSON directly. Every field is range-checked and unknown
      * day names are dropped before the result is handed to the editor.
      */
-    private fun parse(payload: String): AlarmInterpretResult {
+    internal fun parse(payload: String): AlarmInterpretResult {
         return try {
             val root = JSONObject(payload)
             val status = root.optString("status", "ok")
