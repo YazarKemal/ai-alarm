@@ -85,7 +85,18 @@
     <string name="ai_setup_subtitle">إعداد بلغة طبيعية عبر وكيل PromptHaven AI</string>
     <string name="ai_setup_enabled">مفعّل</string>
     <string name="ai_setup_disabled">الإعداد مطلوب</string>
-    <string name="alarm_reliability">موثوقية المنبّه</string>
+
+    <string name="planning_preferences">تفضيلات التخطيط</string>
+    <string name="planning_preferences_subtitle">القيم الافتراضية للنوم والتحضير والتنقل والاحتياط للخطط</string>
+    <string name="open">فتح</string>
+    <string name="save">حفظ</string>
+    <string name="decrease">تقليل</string>
+    <string name="increase">زيادة</string>
+    <string name="wake_preference">تفضيل الاستيقاظ</string>
+    <string name="wake_pref_latest">في أقرب وقت</string>
+    <string name="wake_pref_balanced">متوازن</string>
+    <string name="wake_pref_early">مبكر</string>
+    <string name="pre_alarm">منبّه تحذيري لطيف</string>    <string name="alarm_reliability">موثوقية المنبّه</string>
     <string name="exact_alarm_access">الوصول الدقيق إلى المنبّه</string>
     <string name="notifications">الإشعارات</string>
     <string name="full_screen_alarms">منبّهات بملء الشاشة</string>
@@ -104,6 +115,26 @@
     <string name="refine_request">تحسين الطلب</string>
     <string name="preview">معاينة</string>
 
+    <string name="plan_header">خطة PROMPTHAVEN</string>
+    <string name="arrive_at">الوصول في</string>
+    <string name="sleep_target">هدف النوم</string>
+    <string name="wake">الاستيقاظ</string>
+    <string name="leave_by">المغادرة في</string>
+    <string name="assumptions">الافتراضات</string>
+    <string name="create_plan">إنشاء الخطة</string>
+    <string name="edit_request">تعديل الطلب</string>
+    <string name="clarification_placeholder">إجابتك…</string>
+    <string name="send">إرسال</string>
+    <string name="sleep_shortfall_notice">ستنام فقط نحو %1$d دقيقة — أقل من هدفك.</string>
+    <string name="hours">س</string>
+    <string name="minutes_short">د</string>
+    <string name="not_set">غير محدد</string>
+    <string name="commute">التنقل</string>
+    <string name="buffer">هامش</string>
+    <string name="preparation">التحضير</string>
+    <string name="gentle_wake_up">استيقاظ لطيف</string>
+    <string name="backup_alarm">منبّه احتياطي</string>
+    <string name="alarms">المنبهات</string>
     <!-- Language -->
     <string name="language">اللغة</string>
     <string name="language_dialog_title">اختر اللغة</string>

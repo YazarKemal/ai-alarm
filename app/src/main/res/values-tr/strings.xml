@@ -85,7 +85,18 @@
     <string name="ai_setup_subtitle">PromptHaven AI proxy ile doğal dil kurulumu</string>
     <string name="ai_setup_enabled">Etkin</string>
     <string name="ai_setup_disabled">Kurulum gerekli</string>
-    <string name="alarm_reliability">ALARM GÜVENİLİRLİĞİ</string>
+
+    <string name="planning_preferences">Planlama tercihleri</string>
+    <string name="planning_preferences_subtitle">Hedef planlar için uyku, hazırlık, yolculuk ve yedek varsayılanları</string>
+    <string name="open">Aç</string>
+    <string name="save">Kaydet</string>
+    <string name="decrease">Azalt</string>
+    <string name="increase">Artır</string>
+    <string name="wake_preference">Uyanma tercihi</string>
+    <string name="wake_pref_latest">En geç</string>
+    <string name="wake_pref_balanced">Dengeli</string>
+    <string name="wake_pref_early">Erken</string>
+    <string name="pre_alarm">Nazik ön alarm</string>    <string name="alarm_reliability">ALARM GÜVENİLİRLİĞİ</string>
     <string name="exact_alarm_access">Tam zaman alarm erişimi</string>
     <string name="notifications">Bildirimler</string>
     <string name="full_screen_alarms">Tam ekran alarmlar</string>
@@ -104,6 +115,26 @@
     <string name="refine_request">İsteği düzenle</string>
     <string name="preview">Önizle</string>
 
+    <string name="plan_header">PROMPTHAVEN PLANI</string>
+    <string name="arrive_at">Varış saati</string>
+    <string name="sleep_target">Uyku hedefi</string>
+    <string name="wake">Uyanma</string>
+    <string name="leave_by">Çıkış saati</string>
+    <string name="assumptions">Varsayımlar</string>
+    <string name="create_plan">PLAN OLUŞTUR</string>
+    <string name="edit_request">İsteği düzenle</string>
+    <string name="clarification_placeholder">Cevabınız…</string>
+    <string name="send">Gönder</string>
+    <string name="sleep_shortfall_notice">Yalnızca yaklaşık %1$d dk uyuyacaksınız — hedefinizden az.</string>
+    <string name="hours">s</string>
+    <string name="minutes_short">dk</string>
+    <string name="not_set">Belirsiz</string>
+    <string name="commute">Yolculuk</string>
+    <string name="buffer">Tampon</string>
+    <string name="preparation">Hazırlık</string>
+    <string name="gentle_wake_up">Nazik uyanma</string>
+    <string name="backup_alarm">Yedek alarm</string>
+    <string name="alarms">Alarmlar</string>
     <!-- Language -->
     <string name="language">Dil</string>
     <string name="language_dialog_title">Dil seçin</string>

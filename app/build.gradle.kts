@@ -110,6 +110,9 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.appcheck)
     implementation(libs.firebase.appcheck.playintegrity)
+    // Debug-only App Check provider: lets a debug build attest to the local
+    // backend. debugImplementation so it can never end up in a release APK/AAB.
+    debugImplementation(libs.firebase.appcheck.debug)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

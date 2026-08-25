@@ -85,7 +85,18 @@
     <string name="ai_setup_subtitle">PromptHaven AI प्रॉक्सी के माध्यम से प्राकृतिक भाषा सेटअप</string>
     <string name="ai_setup_enabled">सक्षम</string>
     <string name="ai_setup_disabled">सेटअप आवश्यक</string>
-    <string name="alarm_reliability">अलार्म विश्वसनीयता</string>
+
+    <string name="planning_preferences">योजना प्राथमिकताएँ</string>
+    <string name="planning_preferences_subtitle">योजनाओं के लिए नींद, तैयारी, यात्रा और बैकअप डिफ़ॉल्ट</string>
+    <string name="open">खोलें</string>
+    <string name="save">सहेजें</string>
+    <string name="decrease">घटाएँ</string>
+    <string name="increase">बढ़ाएँ</string>
+    <string name="wake_preference">जागने की प्राथमिकता</string>
+    <string name="wake_pref_latest">सबसे देर</string>
+    <string name="wake_pref_balanced">संतुलित</string>
+    <string name="wake_pref_early">जल्दी</string>
+    <string name="pre_alarm">हल्का पूर्व-अलार्म</string>    <string name="alarm_reliability">अलार्म विश्वसनीयता</string>
     <string name="exact_alarm_access">सटीक अलार्म पहुँच</string>
     <string name="notifications">सूचनाएँ</string>
     <string name="full_screen_alarms">फ़ुल-स्क्रीन अलार्म</string>
@@ -104,6 +115,26 @@
     <string name="refine_request">अनुरोध परिष्कृत करें</string>
     <string name="preview">पूर्वावलोकन</string>
 
+    <string name="plan_header">PROMPTHAVEN योजना</string>
+    <string name="arrive_at">पहुँचें</string>
+    <string name="sleep_target">नींद लक्ष्य</string>
+    <string name="wake">जागें</string>
+    <string name="leave_by">निकलें</string>
+    <string name="assumptions">मान्यताएँ</string>
+    <string name="create_plan">योजना बनाएँ</string>
+    <string name="edit_request">अनुरोध संपादित करें</string>
+    <string name="clarification_placeholder">आपका उत्तर…</string>
+    <string name="send">भेजें</string>
+    <string name="sleep_shortfall_notice">आपको केवल लगभग %1$d मिनट की नींद मिलेगी — आपके लक्ष्य से कम।</string>
+    <string name="hours">घं</string>
+    <string name="minutes_short">मिन</string>
+    <string name="not_set">निर्धारित नहीं</string>
+    <string name="commute">यात्रा</string>
+    <string name="buffer">बफ़र</string>
+    <string name="preparation">तैयारी</string>
+    <string name="gentle_wake_up">हल्का जागरण</string>
+    <string name="backup_alarm">बैकअप अलार्म</string>
+    <string name="alarms">अलार्म</string>
     <!-- Language -->
     <string name="language">भाषा</string>
     <string name="language_dialog_title">भाषा चुनें</string>

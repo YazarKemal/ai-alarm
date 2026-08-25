@@ -85,7 +85,18 @@
     <string name="ai_setup_subtitle">PromptHaven AI 프록시를 통한 자연어 설정</string>
     <string name="ai_setup_enabled">사용 가능</string>
     <string name="ai_setup_disabled">설정 필요</string>
-    <string name="alarm_reliability">알람 신뢰성</string>
+
+    <string name="planning_preferences">계획 기본 설정</string>
+    <string name="planning_preferences_subtitle">계획에 사용할 수면·준비·통근·백업 기본값</string>
+    <string name="open">열기</string>
+    <string name="save">저장</string>
+    <string name="decrease">줄이기</string>
+    <string name="increase">늘리기</string>
+    <string name="wake_preference">기상 선호도</string>
+    <string name="wake_pref_latest">가장 늦게</string>
+    <string name="wake_pref_balanced">균형</string>
+    <string name="wake_pref_early">일찍</string>
+    <string name="pre_alarm">부드러운 사전 알람</string>    <string name="alarm_reliability">알람 신뢰성</string>
     <string name="exact_alarm_access">정확한 알람 액세스</string>
     <string name="notifications">알림</string>
     <string name="full_screen_alarms">전체 화면 알람</string>
@@ -104,6 +115,26 @@
     <string name="refine_request">요청 수정</string>
     <string name="preview">미리보기</string>
 
+    <string name="plan_header">PROMPTHAVEN 계획</string>
+    <string name="arrive_at">도착</string>
+    <string name="sleep_target">수면 목표</string>
+    <string name="wake">기상</string>
+    <string name="leave_by">출발</string>
+    <string name="assumptions">가정</string>
+    <string name="create_plan">계획 만들기</string>
+    <string name="edit_request">요청 수정</string>
+    <string name="clarification_placeholder">답변…</string>
+    <string name="send">보내기</string>
+    <string name="sleep_shortfall_notice">수면은 약 %1$d분뿐이며 목표보다 적습니다.</string>
+    <string name="hours">시간</string>
+    <string name="minutes_short">분</string>
+    <string name="not_set">미설정</string>
+    <string name="commute">통근</string>
+    <string name="buffer">여유</string>
+    <string name="preparation">준비</string>
+    <string name="gentle_wake_up">부드러운 기상</string>
+    <string name="backup_alarm">백업 알람</string>
+    <string name="alarms">알람</string>
     <!-- Language -->
     <string name="language">언어</string>
     <string name="language_dialog_title">언어 선택</string>

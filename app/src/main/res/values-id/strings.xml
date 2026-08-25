@@ -85,7 +85,18 @@
     <string name="ai_setup_subtitle">Pengaturan bahasa alami melalui proxy PromptHaven AI</string>
     <string name="ai_setup_enabled">Aktif</string>
     <string name="ai_setup_disabled">Perlu pengaturan</string>
-    <string name="alarm_reliability">KEANDALAN ALARM</string>
+
+    <string name="planning_preferences">Preferensi perencanaan</string>
+    <string name="planning_preferences_subtitle">Default tidur, persiapan, perjalanan dan cadangan untuk rencana</string>
+    <string name="open">Buka</string>
+    <string name="save">Simpan</string>
+    <string name="decrease">Kurangi</string>
+    <string name="increase">Tambah</string>
+    <string name="wake_preference">Preferensi bangun</string>
+    <string name="wake_pref_latest">Selambatnya</string>
+    <string name="wake_pref_balanced">Seimbang</string>
+    <string name="wake_pref_early">Pagi</string>
+    <string name="pre_alarm">Pra-alarm lembut</string>    <string name="alarm_reliability">KEANDALAN ALARM</string>
     <string name="exact_alarm_access">Akses alarm tepat</string>
     <string name="notifications">Notifikasi</string>
     <string name="full_screen_alarms">Alarm layar penuh</string>
@@ -104,6 +115,26 @@
     <string name="refine_request">Perbaiki permintaan</string>
     <string name="preview">Pratinjau</string>
 
+    <string name="plan_header">RENCANA PROMPTHAVEN</string>
+    <string name="arrive_at">Tiba pukul</string>
+    <string name="sleep_target">Target tidur</string>
+    <string name="wake">Bangun</string>
+    <string name="leave_by">Berangkat pukul</string>
+    <string name="assumptions">Asumsi</string>
+    <string name="create_plan">BUAT RENCANA</string>
+    <string name="edit_request">Ubah permintaan</string>
+    <string name="clarification_placeholder">Jawaban Anda…</string>
+    <string name="send">Kirim</string>
+    <string name="sleep_shortfall_notice">Anda hanya akan tidur sekitar %1$d mnt — kurang dari target.</string>
+    <string name="hours">jm</string>
+    <string name="minutes_short">mnt</string>
+    <string name="not_set">Tidak diatur</string>
+    <string name="commute">Perjalanan</string>
+    <string name="buffer">Cadangan</string>
+    <string name="preparation">Persiapan</string>
+    <string name="gentle_wake_up">Bangun lembut</string>
+    <string name="backup_alarm">Alarm cadangan</string>
+    <string name="alarms">Alarm</string>
     <!-- Language -->
     <string name="language">Bahasa</string>
     <string name="language_dialog_title">Pilih bahasa</string>

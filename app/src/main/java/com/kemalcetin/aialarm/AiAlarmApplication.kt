@@ -3,7 +3,7 @@ package com.kemalcetin.aialarm
 import android.app.Application
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
+import com.kemalcetin.aialarm.core.security.AppCheckProviderFactoryResolver
 import com.kemalcetin.aialarm.core.locale.AppLanguageManager
 import com.kemalcetin.aialarm.di.AppContainer
 
@@ -42,7 +42,7 @@ class AiAlarmApplication : Application() {
         if (firebaseApp != null) {
             runCatching {
                 FirebaseAppCheck.getInstance()
-                    .installAppCheckProviderFactory(PlayIntegrityAppCheckProviderFactory.getInstance())
+                    .installAppCheckProviderFactory(AppCheckProviderFactoryResolver.resolve())
             }
         }
 

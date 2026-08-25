@@ -28,6 +28,7 @@ import com.kemalcetin.aialarm.feature.assistant.network.PromptHavenAiAlarmInterp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 
 /**
  * Lightweight application-level dependency container.
@@ -105,7 +106,10 @@ class AppContainer(
             // The AI request's locale is the user-selected APP language (English
             // default), not the device locale, so the backend answers in the
             // user's chosen language.
-            localeProvider = { appLanguageManager.current().aiTag }
+            localeProvider = { appLanguageManager.current().aiTag },
+            // Only the planning preferences needed for the current request are
+            // sent; the full local profile is never uploaded.
+            planningPreferencesProvider = { appPreferences.aiPlanningPreferences.first() }
         )
     }
 

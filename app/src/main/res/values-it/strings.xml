@@ -85,7 +85,18 @@
     <string name="ai_setup_subtitle">Impostazione in linguaggio naturale tramite il proxy PromptHaven AI</string>
     <string name="ai_setup_enabled">Attivato</string>
     <string name="ai_setup_disabled">Configurazione necessaria</string>
-    <string name="alarm_reliability">AFFIDABILITÀ DELLA SVEGLIA</string>
+
+    <string name="planning_preferences">Preferenze di pianificazione</string>
+    <string name="planning_preferences_subtitle">Valori predefiniti di sonno, preparazione, spostamento e backup per i piani</string>
+    <string name="open">Apri</string>
+    <string name="save">Salva</string>
+    <string name="decrease">Riduci</string>
+    <string name="increase">Aumenta</string>
+    <string name="wake_preference">Preferenza di sveglia</string>
+    <string name="wake_pref_latest">Il più tardi</string>
+    <string name="wake_pref_balanced">Bilanciato</string>
+    <string name="wake_pref_early">Presto</string>
+    <string name="pre_alarm">Pre-sveglia delicata</string>    <string name="alarm_reliability">AFFIDABILITÀ DELLA SVEGLIA</string>
     <string name="exact_alarm_access">Accesso sveglie esatte</string>
     <string name="notifications">Notifiche</string>
     <string name="full_screen_alarms">Sveglie a schermo intero</string>
@@ -104,6 +115,26 @@
     <string name="refine_request">Perfeziona richiesta</string>
     <string name="preview">Anteprima</string>
 
+    <string name="plan_header">PIANO PROMPTHAVEN</string>
+    <string name="arrive_at">Arrivo alle</string>
+    <string name="sleep_target">Obiettivo sonno</string>
+    <string name="wake">Sveglia</string>
+    <string name="leave_by">Partenza alle</string>
+    <string name="assumptions">Presupposti</string>
+    <string name="create_plan">CREA PIANO</string>
+    <string name="edit_request">Modifica richiesta</string>
+    <string name="clarification_placeholder">La tua risposta…</string>
+    <string name="send">Invia</string>
+    <string name="sleep_shortfall_notice">Dormirai solo circa %1$d min — meno del tuo obiettivo.</string>
+    <string name="hours">h</string>
+    <string name="minutes_short">min</string>
+    <string name="not_set">Non impostato</string>
+    <string name="commute">Spostamento</string>
+    <string name="buffer">Margine</string>
+    <string name="preparation">Preparazione</string>
+    <string name="gentle_wake_up">Sveglia delicata</string>
+    <string name="backup_alarm">Sveglia di backup</string>
+    <string name="alarms">Sveglie</string>
     <!-- Language -->
     <string name="language">Lingua</string>
     <string name="language_dialog_title">Scegli la lingua</string>

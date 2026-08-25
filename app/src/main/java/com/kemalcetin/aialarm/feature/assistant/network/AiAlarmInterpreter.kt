@@ -1,6 +1,8 @@
 package com.kemalcetin.aialarm.feature.assistant.network
 
 import com.kemalcetin.aialarm.BuildConfig
+import com.kemalcetin.aialarm.core.planning.AiPlanningPreferences
+import com.kemalcetin.aialarm.core.planning.toConversationRequestBody
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -16,14 +18,18 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 
 /**
- * The result of interpreting a natural-language alarm request.
+ * The result of interpreting a natural-language request.
  *
- * Only ever carries values that should PREFILL the alarm editor. Nothing here
- * schedules an alarm. [Alarm.date] is the optional pinned one-time calendar
- * date (ISO-8601); [Alarm.repeatDays] non-empty means a repeating alarm and
- * [Alarm.date] must then be null.
+ * Three kinds:
+ *  - [Alarm]: a single QUICK_ALARM prefill (time/date/days/label).
+ *  - [GoalPlan]: a computed GOAL_PLAN (deterministic wake plan + up to 3 alarms).
+ *  - [NeedsClarification]: the backend needs one short answer before planning.
+ *
+ * Nothing here schedules an alarm; the app's CREATE PLAN / SAVE are the only
+ * schedulers.
  */
 sealed interface AlarmInterpretResult {
+    /** A single, direct alarm — the QUICK_ALARM case. */
     data class Alarm(
         val hour: Int,
         val minute: Int,
@@ -32,22 +38,57 @@ sealed interface AlarmInterpretResult {
         val label: String
     ) : AlarmInterpretResult
 
-    data class NeedsClarification(val message: String) : AlarmInterpretResult
+    /** A computed goal plan with up to 3 alarms and the assumptions it used. */
+    data class GoalPlan(
+        val destinationLabel: String,
+        val targetTime: String,
+        val sleepStartTime: String,
+        val wakeTime: String,
+        val leaveByTime: String,
+        val sleepShortfallMinutes: Int,
+        val assumptions: PlanAssumptions,
+        val alarms: List<PlanAlarm>
+    ) : AlarmInterpretResult
+
+    /**
+     * The backend needs one more piece of info. [code] is a stable machine key
+     * (e.g. "commute_required") the UI can localize; [message] is the fallback.
+     */
+    data class NeedsClarification(val message: String, val code: String? = null) : AlarmInterpretResult
     data class Failed(val reason: String) : AlarmInterpretResult
 }
 
+data class PlanAssumptions(
+    val sleepMinutes: Int,
+    val preparationMinutes: Int,
+    val commuteMinutes: Int?,
+    val bufferMinutes: Int
+)
+
+data class PlanAlarm(
+    val time: String,
+    val date: LocalDate?,
+    val label: String,
+    val role: String,
+    val enabled: Boolean
+)
+
 /**
  * Client for the server-side PromptHaven AI proxy endpoint
- * `interpretAlarmRequest`.
+ * `interpretAlarmRequest` (V2: two-stage extract-then-plan).
  *
- * SECURITY: the PromptHaven backend holds the AI provider key. This app sends
- * only the user's natural-language text plus non-secret request context
- * (timezone, locale, current time) over a public HTTPS URL — no provider secret
- * ever lives on the device. The backend never schedules alarms; it only returns
- * editor prefill values, which this client strictly validates before use.
+ * SECURITY: the backend holds the AI provider key. This app sends only the
+ * user's text, non-secret context, and the planning preferences needed for the
+ * current request — no provider secret ever lives on the device. The backend
+ * never schedules alarms; it returns values this client strictly validates.
  */
 interface AiAlarmInterpreter {
-    suspend fun interpret(text: String): AlarmInterpretResult
+    /**
+     * [conversation] is a short, in-memory list of clarification answers
+     * (each a user turn) resubmitted so the model can fill a previously-missing
+     * value (e.g. commute). Never a full transcript.
+     */
+    suspend fun interpret(text: String, conversation: List<String> = emptyList()): AlarmInterpretResult
 }
 
 class PromptHavenAiAlarmInterpreter(
@@ -62,24 +103,23 @@ class PromptHavenAiAlarmInterpreter(
      * selected application language. Defaults to the device locale when not
      * injected (e.g. in unit tests).
      */
-    private val localeProvider: () -> String = { Locale.getDefault().toLanguageTag() }
+    private val localeProvider: () -> String = { Locale.getDefault().toLanguageTag() },
+    /**
+     * Supplies the current local planning preferences. Defaults to built-in
+     * defaults when not injected (unit tests).
+     */
+    private val planningPreferencesProvider: suspend () -> AiPlanningPreferences = { AiPlanningPreferences() }
 ) : AiAlarmInterpreter {
 
-    override suspend fun interpret(text: String): AlarmInterpretResult =
+    override suspend fun interpret(text: String, conversation: List<String>): AlarmInterpretResult =
         withContext(Dispatchers.IO) {
             try {
-                // A blank base URL means the backend is not configured for this
-                // build (release ships blank until the deployer sets the Gradle
-                // property). Fail gracefully instead of building a bad request.
                 if (baseUrl.isBlank()) {
                     return@withContext AlarmInterpretResult.Failed("AI proxy not configured")
                 }
-                val body = buildRequestBody(text)
+                val preferences = planningPreferencesProvider()
+                val body = buildRequestBody(text, preferences = preferences, conversation = conversation)
 
-                // Attach a real Firebase App Check token when available. When the
-                // token is unavailable (not configured / Play Integrity fails) we
-                // send without it; an enforcing backend rejects and the app falls
-                // back to the offline workflow. We never fabricate a token.
                 val appCheckToken = tokenProvider?.getToken()
                 val request = buildRequest("$baseUrl/interpretAlarmRequest", body, appCheckToken)
 
@@ -95,11 +135,6 @@ class PromptHavenAiAlarmInterpreter(
             }
         }
 
-    /**
-     * Builds the HTTP request. If [appCheckToken] is non-null the Firebase App
-     * Check token is attached as the `x-firebase-app-check` header; otherwise
-     * no such header is added. This never adds an Authorization/provider header.
-     */
     internal fun buildRequest(url: String, body: String, appCheckToken: String?): Request {
         val builder = Request.Builder()
             .url(url)
@@ -111,26 +146,28 @@ class PromptHavenAiAlarmInterpreter(
     }
 
     /**
-     * Builds the request body sent to the backend. The backend is the only
-     * party that knows the provider secret; this request carries only the
-     * user's text and non-secret context the model needs to interpret it.
+     * Builds the V2 request body: text + context + local planning preferences +
+     * a small recent clarification conversation.
      */
     internal fun buildRequestBody(
         text: String,
         timezone: String = ZoneId.systemDefault().id,
         locale: String = localeProvider(),
-        currentDateTime: String = OffsetDateTime.now().toString()
+        currentDateTime: String = OffsetDateTime.now().toString(),
+        preferences: AiPlanningPreferences = AiPlanningPreferences(),
+        conversation: List<String> = emptyList()
     ): String = JSONObject()
         .put("text", text.take(MAX_TEXT_LENGTH))
         .put("timezone", timezone)
         .put("locale", locale)
         .put("currentDateTime", currentDateTime)
+        .put("preferences", preferences.toRequestBody())
+        .put("conversation", conversation.toConversationRequestBody())
         .toString()
 
     /**
      * Never trust AI JSON directly. Every field is range-checked and unknown
-     * day names are dropped before the result is handed to the editor.
-     * "Impossible combinations" (e.g. a date alongside repeat days) are rejected.
+     * values dropped before the result is handed to the UI/planner.
      */
     internal fun parse(payload: String): AlarmInterpretResult {
         return try {
@@ -140,9 +177,18 @@ class PromptHavenAiAlarmInterpreter(
                     val question = root.optString("clarificationQuestion", "")
                         .takeIf { it.isNotBlank() }
                         ?: return AlarmInterpretResult.Failed("Clarification without question")
-                    AlarmInterpretResult.NeedsClarification(question)
+                    AlarmInterpretResult.NeedsClarification(
+                        question,
+                        root.optString("clarificationCode", "").takeIf { it.isNotBlank() }
+                    )
                 }
-                "success" -> parseInterpretation(root.optJSONObject("interpretation"))
+                "success" -> {
+                    if (root.optString("kind", "") == "goal_plan") {
+                        parseGoalPlan(root.optJSONObject("plan")) ?: AlarmInterpretResult.Failed("Invalid plan payload")
+                    } else {
+                        parseInterpretation(root.optJSONObject("interpretation"))
+                    }
+                }
                 else -> AlarmInterpretResult.Failed("Unknown status")
             }
         } catch (e: Exception) {
@@ -150,10 +196,60 @@ class PromptHavenAiAlarmInterpreter(
         }
     }
 
+    private fun parseGoalPlan(plan: JSONObject?): AlarmInterpretResult.GoalPlan? {
+        if (plan == null) return null
+        val assumptionsObj = plan.optJSONObject("assumptions") ?: return null
+
+        val sleepMinutes = assumptionsObj.optInt("sleepMinutes", -1)
+        val preparationMinutes = assumptionsObj.optInt("preparationMinutes", -1)
+        val commuteMinutes = assumptionsObj.optInt("commuteMinutes", -1).takeIf { it >= 0 }
+        val bufferMinutes = assumptionsObj.optInt("bufferMinutes", -1)
+        if (sleepMinutes < 0 || preparationMinutes < 0 || bufferMinutes < 0) return null
+
+        val alarms = plan.optJSONArray("alarms")?.let { arr ->
+            (0 until arr.length()).mapNotNull { i ->
+                val a = arr.optJSONObject(i) ?: return@mapNotNull null
+                parsePlanAlarm(a)
+            }
+        } ?: emptyList()
+        if (alarms.isEmpty() || alarms.size > 3) return null
+
+        return AlarmInterpretResult.GoalPlan(
+            destinationLabel = plan.optString("destinationLabel", ""),
+            targetTime = plan.optString("targetTime", ""),
+            sleepStartTime = plan.optString("sleepStartTime", ""),
+            wakeTime = plan.optString("wakeTime", ""),
+            leaveByTime = plan.optString("leaveByTime", ""),
+            sleepShortfallMinutes = plan.optInt("sleepShortfallMinutes", 0),
+            assumptions = PlanAssumptions(
+                sleepMinutes = sleepMinutes,
+                preparationMinutes = preparationMinutes,
+                commuteMinutes = commuteMinutes,
+                bufferMinutes = bufferMinutes
+            ),
+            alarms = alarms
+        )
+    }
+
+    private fun parsePlanAlarm(a: JSONObject): PlanAlarm? {
+        val time = a.optString("time", "")
+        val parts = time.split(":").map { it.toIntOrNull() }
+        val hour = parts.getOrNull(0)
+        val minute = parts.getOrNull(1)
+        if (hour == null || minute == null || hour !in 0..23 || minute !in 0..59) return null
+        val date = a.optString("date", "").trim().let { if (it.isBlank()) null else runCatching { LocalDate.parse(it) }.getOrNull() }
+        return PlanAlarm(
+            time = time,
+            date = date,
+            label = a.optString("label", ""),
+            role = a.optString("role", "main"),
+            enabled = a.optBoolean("enabled", true)
+        )
+    }
+
     private fun parseInterpretation(interp: JSONObject?): AlarmInterpretResult {
         if (interp == null) return AlarmInterpretResult.Failed("No interpretation payload")
 
-        // "HH:mm" — must be strict and valid.
         val time = interp.optString("time", "")
         val parts = time.split(":").map { it.toIntOrNull() }
         val hour = parts.getOrNull(0)
@@ -162,7 +258,6 @@ class PromptHavenAiAlarmInterpreter(
             return AlarmInterpretResult.Failed("Invalid time")
         }
 
-        // date is optional but must be a valid ISO-8601 local date if present.
         var date: LocalDate? = null
         if (!interp.isNull("date")) {
             val dateStr = interp.optString("date", "").trim()
@@ -174,14 +269,12 @@ class PromptHavenAiAlarmInterpreter(
             }
         }
 
-        // repeatDays: strictly-valid DayOfWeek names; unknown entries dropped.
         val days = interp.optJSONArray("repeatDays")?.let { arr ->
             (0 until arr.length()).mapNotNull { i ->
                 DayOfWeek.entries.firstOrNull { it.name == arr.optString(i) }
             }.toSet()
         } ?: emptySet()
 
-        // A pinned date and repeat days are mutually exclusive.
         if (date != null && days.isNotEmpty()) {
             return AlarmInterpretResult.Failed("Impossible combination")
         }
@@ -201,7 +294,6 @@ class PromptHavenAiAlarmInterpreter(
         private const val MAX_TEXT_LENGTH = 500
         private const val MAX_LABEL_LENGTH = 80
 
-        /** Header carrying the Firebase App Check token (matches the backend). */
         const val APP_CHECK_HEADER = "x-firebase-app-check"
     }
 }

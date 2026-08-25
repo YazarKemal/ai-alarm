@@ -85,7 +85,18 @@
     <string name="ai_setup_subtitle">Configuration en langage naturel via le proxy PromptHaven AI</string>
     <string name="ai_setup_enabled">Activé</string>
     <string name="ai_setup_disabled">Configuration requise</string>
-    <string name="alarm_reliability">FIABILITÉ DE L\'ALARME</string>
+
+    <string name="planning_preferences">Préférences de planification</string>
+    <string name="planning_preferences_subtitle">Valeurs par défaut de sommeil, préparation, trajet et secours pour les plans</string>
+    <string name="open">Ouvrir</string>
+    <string name="save">Enregistrer</string>
+    <string name="decrease">Diminuer</string>
+    <string name="increase">Augmenter</string>
+    <string name="wake_preference">Préférence de réveil</string>
+    <string name="wake_pref_latest">Au plus tard</string>
+    <string name="wake_pref_balanced">Équilibré</string>
+    <string name="wake_pref_early">Tôt</string>
+    <string name="pre_alarm">Pré-réveil doux</string>    <string name="alarm_reliability">FIABILITÉ DE L\'ALARME</string>
     <string name="exact_alarm_access">Accès à l\'alarme exacte</string>
     <string name="notifications">Notifications</string>
     <string name="full_screen_alarms">Alarmes plein écran</string>
@@ -104,6 +115,26 @@
     <string name="refine_request">Affiner la demande</string>
     <string name="preview">Aperçu</string>
 
+    <string name="plan_header">PLAN PROMPTHAVEN</string>
+    <string name="arrive_at">Arriver à</string>
+    <string name="sleep_target">Objectif de sommeil</string>
+    <string name="wake">Réveil</string>
+    <string name="leave_by">Partir à</string>
+    <string name="assumptions">Hypothèses</string>
+    <string name="create_plan">CRÉER LE PLAN</string>
+    <string name="edit_request">Modifier la demande</string>
+    <string name="clarification_placeholder">Votre réponse…</string>
+    <string name="send">Envoyer</string>
+    <string name="sleep_shortfall_notice">Vous n\' aurez qu\'environ %1$d min de sommeil — moins que votre objectif.</string>
+    <string name="hours">h</string>
+    <string name="minutes_short">min</string>
+    <string name="not_set">Non défini</string>
+    <string name="commute">Trajet</string>
+    <string name="buffer">Marge</string>
+    <string name="preparation">Préparation</string>
+    <string name="gentle_wake_up">Réveil en douceur</string>
+    <string name="backup_alarm">Alarme de secours</string>
+    <string name="alarms">Alarmes</string>
     <!-- Language -->
     <string name="language">Langue</string>
     <string name="language_dialog_title">Choisir la langue</string>

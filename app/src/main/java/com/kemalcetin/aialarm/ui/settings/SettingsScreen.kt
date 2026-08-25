@@ -36,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,6 +54,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kemalcetin.aialarm.R
 import com.kemalcetin.aialarm.core.locale.AppLanguage
+import com.kemalcetin.aialarm.core.planning.AiPlanningPreferences
+import com.kemalcetin.aialarm.core.planning.WakePreference
 import com.kemalcetin.aialarm.di.AppContainer
 import com.kemalcetin.aialarm.ui.components.PhSettingsRow
 import com.kemalcetin.aialarm.ui.components.PhSwitch
@@ -73,6 +76,7 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var showPlanningDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -211,6 +215,15 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
+                DividerLine()
+                PhSettingsRow(
+                    icon = Icons.Outlined.AutoAwesome,
+                    title = stringResource(R.string.planning_preferences),
+                    subtitle = stringResource(R.string.planning_preferences_subtitle),
+                    onClick = { showPlanningDialog = true }
+                ) {
+                    Text(stringResource(R.string.open), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                }
             }
 
             Spacer(Modifier.height(PhSpacing.section))
@@ -322,6 +335,17 @@ fun SettingsScreen(
             onDismiss = { showLanguageDialog = false }
         )
     }
+
+    if (showPlanningDialog) {
+        PlanningPreferencesDialog(
+            current = uiState.planningPreferences,
+            onSave = { updated ->
+                viewModel.setAiPlanningPreferences(updated)
+                showPlanningDialog = false
+            },
+            onDismiss = { showPlanningDialog = false }
+        )
+    }
 }
 
 @Composable
@@ -358,6 +382,203 @@ private fun LanguagePickerDialog(
             }
         }
     )
+}
+
+/**
+ * Edits the on-device AI planning preferences used when the backend computes a
+ * goal plan. All values stay local (DataStore); nothing is uploaded as a
+ * profile. Save is explicit via the Save button.
+ */
+@Composable
+private fun PlanningPreferencesDialog(
+    current: AiPlanningPreferences,
+    onSave: (AiPlanningPreferences) -> Unit,
+    onDismiss: () -> Unit
+) {
+    // Local editable copies so Cancel leaves the stored prefs untouched.
+    var sleepMinutes by remember { mutableStateOf(current.targetSleepMinutes) }
+    var preparationMinutes by remember { mutableStateOf(current.preparationMinutes) }
+    var commuteMinutes by remember { mutableStateOf(current.commuteMinutes) }
+    var bufferMinutes by remember { mutableStateOf(current.bufferMinutes) }
+    var wakePref by remember { mutableStateOf(current.wakePreference) }
+    var preAlarmEnabled by remember { mutableStateOf(current.preAlarmEnabled) }
+    var preAlarmMinutes by remember { mutableStateOf(current.preAlarmMinutes) }
+    var backupEnabled by remember { mutableStateOf(current.backupAlarmEnabled) }
+    var backupMinutes by remember { mutableStateOf(current.backupAlarmMinutes) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.planning_preferences)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                MinutesField(
+                    label = stringResource(R.string.sleep_target),
+                    value = sleepMinutes,
+                    onValueChange = { sleepMinutes = it },
+                    step = 30
+                )
+                MinutesField(
+                    label = stringResource(R.string.preparation),
+                    value = preparationMinutes,
+                    onValueChange = { preparationMinutes = it },
+                    step = 5
+                )
+                MinutesField(
+                    label = stringResource(R.string.buffer),
+                    value = bufferMinutes,
+                    onValueChange = { bufferMinutes = it },
+                    step = 5
+                )
+
+                Spacer(Modifier.height(PhSpacing.md))
+
+                // Typical commute — supports an explicit "Not set".
+                Text(stringResource(R.string.commute), style = MaterialTheme.typography.labelLarge)
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(PhSpacing.xs),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilterChip(
+                        selected = commuteMinutes == null,
+                        onClick = { commuteMinutes = null },
+                        label = { Text(stringResource(R.string.not_set)) },
+                        shape = RoundedCornerShape(PhRadius.chip)
+                    )
+                    MinuteStepper(value = commuteMinutes ?: 30, onChange = { commuteMinutes = it })
+                }
+
+                Spacer(Modifier.height(PhSpacing.md))
+
+                Text(stringResource(R.string.wake_preference), style = MaterialTheme.typography.labelLarge)
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(PhSpacing.xs)
+                ) {
+                    WakePreference.entries.forEach { pref ->
+                        FilterChip(
+                            selected = wakePref == pref,
+                            onClick = { wakePref = pref },
+                            label = { Text(stringResource(wakePrefLabel(pref))) },
+                            shape = RoundedCornerShape(PhRadius.chip)
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(PhSpacing.md))
+
+                ToggleMinutesRow(
+                    label = stringResource(R.string.pre_alarm),
+                    checked = preAlarmEnabled,
+                    onCheckedChange = { preAlarmEnabled = it },
+                    minutes = preAlarmMinutes,
+                    onMinutesChange = { preAlarmMinutes = it },
+                    step = 5
+                )
+                ToggleMinutesRow(
+                    label = stringResource(R.string.backup_alarm),
+                    checked = backupEnabled,
+                    onCheckedChange = { backupEnabled = it },
+                    minutes = backupMinutes,
+                    onMinutesChange = { backupMinutes = it },
+                    step = 5
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onSave(
+                    AiPlanningPreferences(
+                        targetSleepMinutes = sleepMinutes.coerceIn(240, 720),
+                        preparationMinutes = preparationMinutes.coerceIn(0, 360),
+                        commuteMinutes = commuteMinutes?.coerceIn(0, 480),
+                        bufferMinutes = bufferMinutes.coerceIn(0, 180),
+                        wakePreference = wakePref,
+                        preAlarmEnabled = preAlarmEnabled,
+                        preAlarmMinutes = preAlarmMinutes.coerceIn(0, 60),
+                        backupAlarmEnabled = backupEnabled,
+                        backupAlarmMinutes = backupMinutes.coerceIn(0, 60)
+                    )
+                )
+            }) {
+                Text(stringResource(R.string.save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+
+/** Numeric input + +/- stepper for a minutes value. */
+@Composable
+private fun MinutesField(
+    label: String,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    step: Int
+) {
+    Column(Modifier.padding(vertical = PhSpacing.xs)) {
+        Text(label, style = MaterialTheme.typography.labelLarge)
+        Spacer(Modifier.height(PhSpacing.xs))
+        MinuteStepper(value = value, onChange = onValueChange, step = step)
+    }
+}
+
+/** A compact minus / value / plus stepper for minute values. */
+@Composable
+private fun MinuteStepper(
+    value: Int,
+    onChange: (Int) -> Unit,
+    step: Int = 5
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PhSpacing.sm)
+    ) {
+        IconButton(onClick = { onChange((value - step).coerceAtLeast(0)) }) {
+            Icon(Icons.Outlined.Circle, contentDescription = stringResource(R.string.decrease))
+        }
+        Text("$value ${stringResource(R.string.minutes_short)}", style = MaterialTheme.typography.bodyMedium)
+        IconButton(onClick = { onChange(value + step) }) {
+            Icon(Icons.Outlined.Circle, contentDescription = stringResource(R.string.increase))
+        }
+    }
+}
+
+/** A toggle row (enable switch) plus an inline minute stepper. */
+@Composable
+private fun ToggleMinutesRow(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    minutes: Int,
+    onMinutesChange: (Int) -> Unit,
+    step: Int
+) {
+    Column(Modifier.padding(vertical = PhSpacing.xs)) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(label, style = MaterialTheme.typography.labelLarge)
+            PhSwitch(checked = checked, onCheckedChange = onCheckedChange)
+        }
+        if (checked) {
+            Spacer(Modifier.height(PhSpacing.xs))
+            MinuteStepper(value = minutes, onChange = onMinutesChange, step = step)
+        }
+    }
+}
+
+@StringRes
+private fun wakePrefLabel(pref: WakePreference): Int = when (pref) {
+    WakePreference.LATEST_POSSIBLE -> R.string.wake_pref_latest
+    WakePreference.BALANCED -> R.string.wake_pref_balanced
+    WakePreference.EARLY -> R.string.wake_pref_early
 }
 
 @Composable

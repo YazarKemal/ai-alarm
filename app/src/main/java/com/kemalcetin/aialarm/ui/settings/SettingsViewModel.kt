@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.kemalcetin.aialarm.core.locale.AppLanguage
 import com.kemalcetin.aialarm.core.locale.AppLanguageManager
 import com.kemalcetin.aialarm.core.permission.BatteryOptimizationManager
+import com.kemalcetin.aialarm.core.planning.AiPlanningPreferences
 import com.kemalcetin.aialarm.core.permission.ExactAlarmPermissionManager
 import com.kemalcetin.aialarm.core.permission.FullScreenIntentPermissionManager
 import com.kemalcetin.aialarm.core.permission.NotificationPermissionManager
@@ -30,6 +31,7 @@ data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val clockStyle: ClockStyle = AppPreferences.DEFAULT_CLOCK_STYLE,
     val language: AppLanguage = AppLanguage.default,
+    val planningPreferences: AiPlanningPreferences = AiPlanningPreferences(),
     val exactAlarmAllowed: Boolean = true,
     val notificationsGranted: Boolean = true,
     val fullScreenAvailable: Boolean = true,
@@ -54,20 +56,29 @@ class SettingsViewModel(
             SettingsUiState(appVersion = appVersion)
         )
 
-    private fun combineSettings(): Flow<SettingsUiState> =
-        combine(
+    /**
+     * Combines the setting flows into one UI state. `combine` is arity-limited to
+     * 5 typed flows, so the four stateless flows are folded first, then merged
+     * with the language + planning preference flows (which need resolving).
+     */
+    private fun combineSettings(): Flow<SettingsUiState> {
+        val base = combine(
             preferences.defaultSnoozeMinutes,
             preferences.autoCreateEnabled,
             preferences.themeMode,
-            preferences.clockStyle,
-            preferences.selectedLanguageTag
-        ) { snooze, autoCreate, theme, clock, languageTag ->
+            preferences.clockStyle
+        ) { snooze, autoCreate, theme, clock ->
             SettingsUiState(
                 defaultSnoozeMinutes = snooze,
                 smartSuggestionsEnabled = autoCreate,
                 themeMode = theme,
-                clockStyle = clock,
+                clockStyle = clock
+            )
+        }
+        return combine(base, preferences.selectedLanguageTag, preferences.aiPlanningPreferences) { state, languageTag, planning ->
+            state.copy(
                 language = AppLanguage.resolve(languageTag),
+                planningPreferences = planning,
                 exactAlarmAllowed = exactPermission.canScheduleExactAlarms(),
                 notificationsGranted = notificationPermission.isGranted(),
                 fullScreenAvailable = fullScreenPermission.canUseFullScreenIntent(),
@@ -75,6 +86,7 @@ class SettingsViewModel(
                 appVersion = appVersion
             )
         }
+    }
 
     fun setDefaultSnooze(minutes: Int) {
         viewModelScope.launch { preferences.setDefaultSnooze(minutes) }
@@ -99,6 +111,10 @@ class SettingsViewModel(
      */
     fun setLanguage(language: AppLanguage) {
         appLanguageManager.setLanguage(language)
+    }
+
+    fun setAiPlanningPreferences(planning: AiPlanningPreferences) {
+        viewModelScope.launch { preferences.setAiPlanningPreferences(planning) }
     }
 
     companion object {

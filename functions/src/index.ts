@@ -1,41 +1,46 @@
 /**
- * PromptHaven AI proxy — `interpretAlarmRequest`
+ * PromptHaven AI proxy V2 — `interpretAlarmRequest`
+ *
+ * Two-stage architecture: the AI model ONLY extracts structured constraints from
+ * natural language; deterministic code computes the actual schedule (see
+ * planner.ts). The model is never allowed to invent final alarm times.
  *
  * The ONLY place an AI provider key exists is server-side secret management
- * (Firebase Secret Manager / env). The Android app sends a public HTTPS request
- * with the user's natural-language text plus non-secret context (timezone,
- * locale, current time) and receives back a validated alarm prefill. This
- * backend NEVER schedules an alarm — it only returns values that the app may
- * choose to prefill into its editor (the app's SAVE button is the sole thing
- * that ever schedules).
+ * (Firebase Secret Manager / env: PROVIDER_API_KEY). The Android app sends a
+ * public HTTPS request with the user's text, non-secret context, and the local
+ * planning preferences needed for the current request, and receives back either:
+ *   - a QUICK_ALARM (a single, direct alarm time), or
+ *   - a GOAL_PLAN (computed wake plan with up to 3 alarms), or
+ *   - CLARIFICATION_REQUIRED (missing critical info, phrased in the user's locale).
  *
  * Security posture:
- *   - Provider key via secret, never baked into the function bundle.
- *   - Text length capped (~500 chars). No full prompts are logged.
- *   - Response is strictly schema-checked and range-checked before returning.
- *   - Clarification requests returned instead of guessed answers when ambiguous.
- *   - Firebase App Check: the request's App Check token is verified before the
- *     provider is called. Enforcement is toggled by APP_CHECK_ENFORCED so local
- *     / emulator development stays practical (see README).
- *   - Rate limiting: a lightweight in-memory per-IP token bucket throttles
- *     abuse. Fine for a single-instance proxy; for multi-instance production
- *     prefer a distributed store or Cloud Armor.
+ *   - Provider key via secret; model via PROVIDER_MODEL env (default
+ *     deepseek-v4-flash). Never exposed to Android.
+ *   - Provider model runs in NON-THINKING mode (structured extraction doesn't
+ *     need long reasoning) for lower latency/cost.
+ *   - Text capped. No full user prompts are logged. Requests are not stored.
+ *   - Provider output is strictly schema- and range-checked (untrusted).
+ *   - Backend NEVER schedules an alarm; the app's CREATE PLAN/SAVE is the only
+ *     thing that schedules.
+ *   - Firebase App Check verification defaults ON for deployed functions;
+ *     explicit local/emulator bypass via APP_CHECK_ENFORCED=false.
  */
 import { initializeApp } from "firebase-admin/app";
 import { getAppCheck } from "firebase-admin/app-check";
 import * as https from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { defineSecret } from "firebase-functions/params";
+import { plan, MIN_MS } from "./planner";
 
-// Ensure the default Admin app exists before we call getAppCheck().
 initializeApp();
 
-// Fire-2 (DeepSeek) key held only in secret manager. Overridable for testing.
 const PROVIDER_API_KEY = defineSecret("PROVIDER_API_KEY");
 const PROVIDER_ENDPOINT = process.env.PROVIDER_ENDPOINT ?? "https://api.deepseek.com/chat/completions";
+const PROVIDER_MODEL = process.env.PROVIDER_MODEL ?? "deepseek-v4-flash";
 
-// App Check + rate limiting are tunable via env so local/emulator work stays practical.
-const APP_CHECK_ENFORCED = process.env.APP_CHECK_ENFORCED === "true";
+// App Check enforcement defaults ON (deployed). Local/emulator dev sets
+// APP_CHECK_ENFORCED=false to bypass. CORS is never treated as security.
+const APP_CHECK_ENFORCED = process.env.APP_CHECK_ENFORCED !== "false";
 const RATE_LIMIT_PER_MINUTE = Number(process.env.RATE_LIMIT_PER_MINUTE ?? 60);
 
 const APP_CHECK_HEADER = "x-firebase-app-check";
@@ -43,19 +48,38 @@ const RATE_WINDOW_MS = 60_000;
 
 const MAX_TEXT_LENGTH = 500;
 const MAX_LABEL_LENGTH = 80;
-const DAY_NAMES = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] as const;
+const MAX_PLAN_ALARMS = 3;
 
-type DayName = (typeof DAY_NAMES)[number];
+// -------- hard validation limits --------
+const SLEEP_MIN = 240, SLEEP_MAX = 720;
+const PREP_MIN = 0, PREP_MAX = 360;
+const COMMUTE_MIN = 0, COMMUTE_MAX = 480;
+const BUFFER_MIN = 0, BUFFER_MAX = 180;
+const PRE_BACKUP_MIN = 0, PRE_BACKUP_MAX = 60;
 
-interface Interpretation {
-  time: string; // "HH:mm"
-  date: string | null; // ISO-8601 yyyy-MM-dd, null for repeating
-  repeatDays: DayName[]; // [] for one-time
-  label: string;
+type Locale = string;
+type ClarificationCode = "commute_required";
+
+const COMMUTE_QUESTIONS: Record<string, string> = {
+  en: "How long does it usually take you to get there?",
+  tr: "Oraya ulaşman genellikle kaç dakika sürüyor?",
+  es: "¿Cuánto tiempo sueles tardar en llegar?",
+  "pt-BR": "Quanto tempo você normalmente leva para chegar lá?",
+  de: "Wie lange brauchst du normalerweise, um dorthin zu kommen?",
+  fr: "Combien de temps vous faut-il habituellement pour y arriver ?",
+  it: "Quanto tempo impieghi di solito ad arrivare?",
+  id: "Berapa lama biasanya kamu sampai ke sana?",
+  hi: "आपको वहाँ पहुँचने में आमतौर पर कितना समय लगता है?",
+  ja: "そこまで通常どれくらいかかりますか？",
+  ko: "거기까지 보통 얼마나 걸리나요?",
+  ar: "كم يستغرق وصولك إلى هناك عادة؟",
+};
+
+function commuteQuestion(locale: string): string {
+  const base = locale.toLowerCase();
+  const match = base === "pt-br" ? "pt-BR" : COMMUTE_QUESTIONS[base];
+  return match ?? COMMUTE_QUESTIONS.en;
 }
-type InterpretResponse =
-  | { status: "success"; interpretation: Interpretation; needsClarification: false; clarificationQuestion: null }
-  | { status: "clarification_required"; interpretation: null; needsClarification: true; clarificationQuestion: string };
 
 /** In-memory per-IP sliding-window limiter (per function instance). */
 const buckets = new Map<string, { count: number; resetAt: number }>();
@@ -70,12 +94,6 @@ function isRateLimited(ip: string): boolean {
   return bucket.count > RATE_LIMIT_PER_MINUTE;
 }
 
-/**
- * Verifies the Firebase App Check token carried in the request header.
- * When APP_CHECK_ENFORCED is false (local/emulator), requests without a token
- * are allowed through so development stays practical; production must run with
- * APP_CHECK_ENFORCED=true.
- */
 async function enforceAppCheck(req: https.Request): Promise<{ ok: true } | { ok: false; code: number; error: string }> {
   if (!APP_CHECK_ENFORCED) return { ok: true };
   const token = req.headers[APP_CHECK_HEADER];
@@ -91,21 +109,246 @@ async function enforceAppCheck(req: https.Request): Promise<{ ok: true } | { ok:
   }
 }
 
-function buildSystemPrompt(timezone: string, locale: string, currentDateTime: string): string {
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface Preferences {
+  targetSleepMinutes: number;
+  preparationMinutes: number;
+  commuteMinutes: number | null;
+  bufferMinutes: number;
+  wakePreference: string;
+  preAlarmEnabled: boolean;
+  preAlarmMinutes: number;
+  backupAlarmEnabled: boolean;
+  backupAlarmMinutes: number;
+}
+
+interface Extracted {
+  intent: "arrive_by" | "wake_at";
+  destinationLabel: string | null;
+  targetDate: string; // yyyy-MM-dd (always resolved; else clarification)
+  targetTime: string; // HH:mm
+  requestedSleepMinutes: number | null;
+  commuteMinutes: number | null;
+  preparationMinutes: number | null;
+}
+
+type PlanResponse =
+  | { status: "success"; kind: "quick_alarm"; interpretation: { time: string; date: string | null; repeatDays: string[]; label: string }; needsClarification: false; clarificationQuestion: null }
+  | {
+      status: "success";
+      kind: "goal_plan";
+      plan: {
+        destinationLabel: string;
+        targetTime: string;
+        sleepStartTime: string;
+        wakeTime: string;
+        leaveByTime: string;
+        sleepShortfallMinutes: number;
+        assumptions: {
+          sleepMinutes: number;
+          preparationMinutes: number;
+          commuteMinutes: number | null;
+          bufferMinutes: number;
+        };
+        alarms: Array<{ time: string; date: string; label: string; role: string; enabled: boolean }>;
+      };
+      needsClarification: false;
+      clarificationQuestion: null;
+    }
+  | { status: "clarification_required"; clarificationCode: ClarificationCode | null; clarificationQuestion: string; needsClarification: true };
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function pad(n: number): string {
+  return n < 10 ? `0${n}` : String(n);
+}
+
+/** "HH:mm" strictly in 0-23 / 0-59. */
+function parseHm(value: unknown): { hour: number; minute: number } | null {
+  if (typeof value !== "string") return null;
+  const m = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
+  if (!m) return null;
+  const hour = Number(m[1]);
+  const minute = Number(m[2]);
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  return { hour, minute };
+}
+
+/** Valid ISO-8601 local date (yyyy-MM-dd). */
+function parseIsoDate(value: unknown): string | null | undefined {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== "string") return undefined;
+  const s = value.trim();
+  if (s.length === 0) return null;
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(`${s}T00:00:00Z`)) ? s : undefined;
+}
+
+function clampInt(value: unknown, fallback: number, min: number, max: number): number {
+  const n = typeof value === "number" && Number.isFinite(value) ? Math.round(value) : NaN;
+  return Number.isNaN(n) ? fallback : Math.min(max, Math.max(min, n));
+}
+
+/** Reads an optional bounded minutes value, or null when absent/invalid. */
+function optInt(value: unknown, min: number, max: number): number | null {
+  const n = typeof value === "number" && Number.isFinite(value) ? Math.round(value) : NaN;
+  if (Number.isNaN(n)) return null;
+  if (n < min || n > max) return null;
+  return n;
+}
+
+function parsePreferences(raw: unknown): Preferences {
+  const p = (raw ?? {}) as Record<string, unknown>;
+  const sleep = clampInt(p.targetSleepMinutes, 480, SLEEP_MIN, SLEEP_MAX);
+  const prep = clampInt(p.preparationMinutes, 30, PREP_MIN, PREP_MAX);
+  const buffer = clampInt(p.bufferMinutes, 15, BUFFER_MIN, BUFFER_MAX);
+  const preMinutes = clampInt(p.preAlarmMinutes, 10, PRE_BACKUP_MIN, PRE_BACKUP_MAX);
+  const backupMinutes = clampInt(p.backupAlarmMinutes, 10, PRE_BACKUP_MIN, PRE_BACKUP_MAX);
+  // Saved commute is optional (null = unknown, then we must ask for arrive-by).
+  const commute = optInt(p.commuteMinutes, COMMUTE_MIN, COMMUTE_MAX);
+  return {
+    targetSleepMinutes: sleep,
+    preparationMinutes: prep,
+    commuteMinutes: commute,
+    bufferMinutes: buffer,
+    wakePreference: p.wakePreference === "BALANCED" || p.wakePreference === "EARLY" ? p.wakePreference : "LATEST_POSSIBLE",
+    preAlarmEnabled: p.preAlarmEnabled !== false,
+    preAlarmMinutes: preMinutes,
+    backupAlarmEnabled: p.backupAlarmEnabled !== false,
+    backupAlarmMinutes: backupMinutes,
+  };
+}
+
+/** Resolves an absolute epoch for a local date+time at the request's offset. */
+function arrivalEpochMs(dateStr: string, timeStr: string, offsetMinutes: number): number | null {
+  const hm = parseHm(timeStr);
+  const date = parseIsoDate(dateStr);
+  if (!hm || date === undefined || date === null) return null;
+  const [y, mo, d] = date.split("-").map(Number);
+  // Represent local time at the given offset as an absolute epoch.
+  return Date.UTC(y, mo - 1, d, hm.hour, hm.minute) - offsetMinutes * MIN_MS;
+}
+
+/** Builds the system prompt so the model extracts constraints, never times. */
+function buildExtractionPrompt(timezone: string, locale: string, currentDateTime: string, prefs: Preferences): string {
   return [
-    "You are PromptHaven Alarm's configuration assistant.",
-    "The user's current timezone, locale, and reference timestamp are provided for context so you can resolve relative dates like 'tomorrow' or 'today'.",
+    "You are the Planner for the Smart Alarm Clock app. You extract structured constraints from the user's natural language. You never compute final alarm times — code does that.",
     `Reference timestamp (ISO-8601): ${currentDateTime}`,
     `User timezone: ${timezone}`,
     `User locale: ${locale}`,
-    "Convert the user's natural-language alarm request into structured JSON ONLY.",
-    'Reply with exactly one JSON object with this shape: {"time":"HH:mm","date":"YYYY-MM-DD or null","repeatDays":["MONDAY",...] or [],"label":"short label"}',
-    "Use 24-hour time. repeatDays uses DayOfWeek enum names; an empty array [] means one-time.",
-    'A one-time alarm on a specific calendar day sets "date". A repeating alarm sets "repeatDays" and "date":null. Never set both.',
-    'If the request is ambiguous about the time, day, or date, reply instead: {"clarificationQuestion":"one short question to the user"}',
-    'Keep "label" under 80 characters and meaningful. Do not invent alarms. Do not include anything except this JSON.',
+    "Resolve relative dates (tomorrow, today, 'Cuma') to an absolute target date using the reference timestamp.",
+    "Preferences the user has configured (defaults; only override when the user EXPLICITLY states otherwise):",
+    JSON.stringify({
+      targetSleepMinutes: prefs.targetSleepMinutes,
+      preparationMinutes: prefs.preparationMinutes,
+      commuteMinutes: prefs.commuteMinutes,
+      bufferMinutes: prefs.bufferMinutes,
+      wakePreference: prefs.wakePreference,
+    }),
+    "",
+    "Return exactly one JSON object, one of two shapes:",
+    "1) When you can extract a goal with a target time:",
+    `{"intent":"arrive_by","destinationLabel":"School","targetDate":"YYYY-MM-DD","targetTime":"HH:mm","requestedSleepMinutes":null,"commuteMinutes":null,"preparationMinutes":null}`,
+    "2) When the user asks for a plain wake-up alarm at a specific time:",
+    `{"intent":"wake_at","destinationLabel":"Wake Up","targetDate":"YYYY-MM-DD","targetTime":"HH:mm","requestedSleepMinutes":null,"commuteMinutes":null,"preparationMinutes":null}`,
+    "Rules:",
+    "- 'arrive_by' is for requests like 'be at school by 13:00' or 'okulda olmam lazım'. 'wake_at' is for 'wake me at 7:30'.",
+    "- Only set commuteMinutes / preparationMinutes / requestedSleepMinutes when the user EXPLICITLY gives that number (in the request OR a prior clarification answer in conversation). NEVER guess or assume them; use null when unknown.",
+    "- commuteMinutes is in minutes; null if not stated.",
+    "- Use 24-hour time. If you cannot resolve a date or time, reply instead:",
+    `{"clarificationQuestion":"one short question in the user's language to disambiguate"}`,
+    "Do not include anything except the JSON.",
   ].join("\n");
 }
+
+// ---------------------------------------------------------------------------
+// Provider call (DeepSeek v4 flash, non-thinking)
+// ---------------------------------------------------------------------------
+
+async function callProvider(prompt: string, systemPrompt: string, apiKey: string, conversation: unknown[]): Promise<string> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  const messages: Array<{ role: string; content: string }> = [
+    { role: "system", content: systemPrompt },
+  ];
+  if (Array.isArray(conversation) && conversation.length > 0) {
+    // Small recent context only — enough for one clarification turn. Never a
+    // full transcript, and the endpoint stays stateless (no server DB).
+    for (const item of conversation.slice(-4)) {
+      const entry = (item ?? {}) as { role?: unknown; content?: unknown };
+      const role = entry.role === "assistant" ? "assistant" : "user";
+      const content = typeof entry.content === "string" ? entry.content : String(entry.content ?? "");
+      if (content) messages.push({ role, content: content.slice(0, MAX_TEXT_LENGTH) });
+    }
+  }
+  messages.push({ role: "user", content: prompt });
+  try {
+    const response = await fetch(PROVIDER_ENDPOINT, {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: PROVIDER_MODEL,
+        response_format: { type: "json_object" },
+        thinking: { type: "disabled" }, // structured extraction needs no long reasoning
+        messages,
+        max_tokens: 400,
+      }),
+    });
+    if (!response.ok) throw new Error(`provider status ${response.status}`);
+    const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    return data.choices?.[0]?.message?.content ?? "";
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Validation of the model's extracted constraints (untrusted)
+// ---------------------------------------------------------------------------
+
+function sanitizeExtraction(raw: string): { clarificationQuestion: string } | { extracted: Extracted } | null {
+  let obj: Record<string, unknown>;
+  try {
+    obj = JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+
+  if (typeof obj.clarificationQuestion === "string" && obj.clarificationQuestion.trim()) {
+    return { clarificationQuestion: obj.clarificationQuestion.trim().slice(0, 200) };
+  }
+
+  const intent = obj.intent;
+  if (intent !== "arrive_by" && intent !== "wake_at") return null;
+  const targetTime = typeof obj.targetTime === "string" ? obj.targetTime.trim() : "";
+  if (!parseHm(targetTime)) return null;
+  const date = parseIsoDate(obj.targetDate);
+  if (date === undefined || date === null) return null;
+
+  return {
+    extracted: {
+      intent,
+      destinationLabel: typeof obj.destinationLabel === "string" ? obj.destinationLabel.trim().slice(0, MAX_LABEL_LENGTH) || null : null,
+      targetDate: date,
+      targetTime,
+      requestedSleepMinutes: optInt(obj.requestedSleepMinutes, SLEEP_MIN, SLEEP_MAX),
+      commuteMinutes: optInt(obj.commuteMinutes, COMMUTE_MIN, COMMUTE_MAX),
+      preparationMinutes: optInt(obj.preparationMinutes, PREP_MIN, PREP_MAX),
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Endpoint
+// ---------------------------------------------------------------------------
 
 export const interpretAlarmRequest = https.onRequest(
   {
@@ -140,29 +383,117 @@ export const interpretAlarmRequest = https.onRequest(
       const timezone = typeof body.timezone === "string" ? body.timezone : "";
       const locale = typeof body.locale === "string" ? body.locale : "";
       const currentDateTime = typeof body.currentDateTime === "string" ? body.currentDateTime : "";
+      const preferences = parsePreferences(body.preferences);
+      const conversation = Array.isArray(body.conversation) ? body.conversation : [];
 
       if (text.trim().length === 0) {
         res.status(400).json({ error: "empty_text" });
         return;
       }
-      // All context fields are required for a correct relative-date resolution.
       if (timezone.trim().length === 0 || locale.trim().length === 0 || currentDateTime.trim().length === 0) {
         res.status(400).json({ error: "missing_context" });
         return;
       }
 
+      const offset = offsetMinutes(currentDateTime);
+
       const providerResult = await callProvider(
         text,
-        buildSystemPrompt(timezone, locale, currentDateTime),
-        PROVIDER_API_KEY.value()
+        buildExtractionPrompt(timezone, locale, currentDateTime, preferences),
+        PROVIDER_API_KEY.value(),
+        conversation
       );
-      // Validate/sanitize provider output — never trust raw AI JSON.
-      const parsed = sanitize(providerResult);
+
+      const parsed = sanitizeExtraction(providerResult);
       if (parsed === null) {
         res.status(502).json({ error: "invalid_provider_response" });
         return;
       }
-      res.json(parsed);
+      if ("clarificationQuestion" in parsed) {
+        res.json({
+          status: "clarification_required",
+          clarificationCode: null,
+          clarificationQuestion: parsed.clarificationQuestion,
+          needsClarification: true,
+        } satisfies PlanResponse);
+        return;
+      }
+
+      const extraction = parsed.extracted;
+
+      if (extraction.intent === "wake_at") {
+        res.json({
+          status: "success",
+          kind: "quick_alarm",
+          interpretation: {
+            time: extraction.targetTime,
+            date: extraction.targetDate,
+            repeatDays: [],
+            label: extraction.destinationLabel ?? "",
+          },
+          needsClarification: false,
+          clarificationQuestion: null,
+        } satisfies PlanResponse);
+        return;
+      }
+
+      // ---- arrive_by -> deterministic goal plan ----
+      const nowEpochMs = Date.parse(currentDateTime);
+      const arrivalMs = arrivalEpochMs(extraction.targetDate, extraction.targetTime, offset);
+      if (arrivalMs === null || Number.isNaN(nowEpochMs)) {
+        res.status(502).json({ error: "invalid_time_context" });
+        return;
+      }
+
+      const commute = preferences.commuteMinutes ?? extraction.commuteMinutes;
+      if (commute === null) {
+        // Critical missing info: commute is required for an arrive-by goal and
+        // none is saved. Ask, in the user's locale, rather than guessing.
+        res.json({
+          status: "clarification_required",
+          clarificationCode: "commute_required",
+          clarificationQuestion: commuteQuestion(locale),
+          needsClarification: true,
+        } satisfies PlanResponse);
+        return;
+      }
+
+      const preparation = extraction.preparationMinutes ?? preferences.preparationMinutes;
+      const sleep = clampInt(extraction.requestedSleepMinutes ?? preferences.targetSleepMinutes, preferences.targetSleepMinutes, SLEEP_MIN, SLEEP_MAX);
+
+      const result = plan({
+        arrivalEpochMs: arrivalMs,
+        nowEpochMs,
+        offsetMinutes: offset,
+        commuteMinutes: commute,
+        preparationMinutes: preparation,
+        sleepMinutes: sleep,
+        bufferMinutes: preferences.bufferMinutes,
+        preAlarmEnabled: preferences.preAlarmEnabled,
+        preAlarmMinutes: preferences.preAlarmMinutes,
+        backupAlarmEnabled: preferences.backupAlarmEnabled,
+        backupAlarmMinutes: preferences.backupAlarmMinutes,
+        destinationLabel: extraction.destinationLabel ?? "Wake up",
+      });
+
+      const alarms = result.alarms.slice(0, MAX_PLAN_ALARMS).map((a) => ({ time: a.time, date: a.date, label: a.label, role: a.role, enabled: a.enabled }));
+
+      res.json({
+        status: "success",
+        kind: "goal_plan",
+        plan: {
+          destinationLabel: extraction.destinationLabel ?? "Wake up",
+          targetTime: extraction.targetTime,
+          sleepStartTime: result.sleepStartTime,
+          wakeTime: result.wakeTime,
+          leaveByTime: result.leaveByTime,
+          sleepShortfallMinutes: result.sleepShortfallMinutes,
+          assumptions: result.assumptions,
+          alarms,
+        },
+        needsClarification: false,
+        clarificationQuestion: null,
+      } satisfies PlanResponse);
     } catch (err) {
       // No full user text is ever logged.
       logger.error("interpretAlarmRequest failed", err);
@@ -171,98 +502,11 @@ export const interpretAlarmRequest = https.onRequest(
   }
 );
 
-async function callProvider(prompt: string, systemPrompt: string, apiKey: string): Promise<string> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 15000);
-  try {
-    const response = await fetch(PROVIDER_ENDPOINT, {
-      method: "POST",
-      signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: prompt },
-        ],
-        max_tokens: 200,
-      }),
-    });
-    if (!response.ok) throw new Error(`provider status ${response.status}`);
-    const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    return data.choices?.[0]?.message?.content ?? "";
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-function isValidDayName(value: unknown): value is DayName {
-  return typeof value === "string" && (DAY_NAMES as readonly string[]).includes(value);
-}
-
-/** "HH:mm" strictly in 0-23 / 0-59. */
-function parseHm(value: unknown): { hour: number; minute: number } | null {
-  if (typeof value !== "string") return null;
-  const m = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
-  if (!m) return null;
-  const hour = Number(m[1]);
-  const minute = Number(m[2]);
-  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
-  return { hour, minute };
-}
-
-/** Valid ISO-8601 local date (yyyy-MM-dd) or null when absent/blank. */
-function parseIsoDate(value: unknown): string | null | undefined {
-  if (value === null || value === undefined) return null;
-  if (typeof value !== "string") return undefined; // present but wrong type
-  const s = value.trim();
-  if (s.length === 0) return null;
-  return /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(`${s}T00:00:00Z`)) ? s : undefined;
-}
-
-/** Range-checks and whitelists every field of the provider JSON. */
-function sanitize(raw: string): InterpretResponse | null {
-  let obj: Record<string, unknown>;
-  try {
-    obj = JSON.parse(raw) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-
-  if (typeof obj.clarificationQuestion === "string" && obj.clarificationQuestion.trim()) {
-    return {
-      status: "clarification_required",
-      interpretation: null,
-      needsClarification: true,
-      clarificationQuestion: obj.clarificationQuestion.trim().slice(0, 200),
-    };
-  }
-
-  const hm = parseHm(obj.time);
-  if (!hm) return null;
-
-  const date = parseIsoDate(obj.date);
-  if (date === undefined) return null;
-
-  let repeatDays: DayName[] = [];
-  if (Array.isArray(obj.repeatDays)) {
-    repeatDays = obj.repeatDays.filter(isValidDayName);
-  }
-
-  // A pinned date and repeat days are mutually exclusive.
-  if (date !== null && repeatDays.length > 0) return null;
-
-  const label = typeof obj.label === "string" ? obj.label.trim().slice(0, MAX_LABEL_LENGTH) : "";
-  const time = `${String(hm.hour).padStart(2, "0")}:${String(hm.minute).padStart(2, "0")}`;
-
-  return {
-    status: "success",
-    interpretation: { time, date, repeatDays, label },
-    needsClarification: false,
-    clarificationQuestion: null,
-  };
+/** Parses the fixed UTC offset (minutes) from an ISO-8601 OffsetDateTime string. */
+function offsetMinutes(iso: string): number {
+  // "2026-08-25T06:00:00+03:00" | "...Z"
+  const m = /([+-])(\d{2}):(\d{2})$/.exec(iso.trim());
+  if (!m) return 0;
+  const sign = m[1] === "-" ? -1 : 1;
+  return sign * (Number(m[2]) * 60 + Number(m[3]));
 }

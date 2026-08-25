@@ -1,5 +1,6 @@
 package com.kemalcetin.aialarm.feature.assistant.network
 
+import com.kemalcetin.aialarm.core.planning.AiPlanningPreferences
 import java.time.DayOfWeek
 import java.time.LocalDate
 import kotlinx.coroutines.runBlocking
@@ -206,5 +207,119 @@ class PromptHavenAiAlarmInterpreterTest {
             appCheckProvider = { throw IllegalStateException("no default FirebaseApp") }
         )
         assertNull(provider.getToken())
+    }
+
+    // ---- Goal plan (V2) ----
+
+    @Test
+    fun `parses a goal plan with alarms and assumptions`() {
+        val result = interpreter.parse(
+            """{"status":"success","kind":"goal_plan","plan":{
+                "destinationLabel":"work","targetTime":"13:00",
+                "sleepStartTime":"03:35","wakeTime":"11:35","leaveByTime":"12:05",
+                "sleepShortfallMinutes":25,
+                "assumptions":{"sleepMinutes":480,"preparationMinutes":30,"commuteMinutes":40,"bufferMinutes":15},
+                "alarms":[
+                  {"time":"11:25","date":"2026-08-26","label":"Gentle wake","role":"gentle","enabled":true},
+                  {"time":"11:35","date":"2026-08-26","label":"Wake","role":"main","enabled":true},
+                  {"time":"11:45","date":"2026-08-26","label":"Backup","role":"backup","enabled":false}
+                ]
+            }}"""
+        )
+        val plan = result as AlarmInterpretResult.GoalPlan
+        assertEquals("work", plan.destinationLabel)
+        assertEquals("13:00", plan.targetTime)
+        assertEquals("11:35", plan.wakeTime)
+        assertEquals("12:05", plan.leaveByTime)
+        assertEquals(25, plan.sleepShortfallMinutes)
+        assertEquals(480, plan.assumptions.sleepMinutes)
+        assertEquals(40, plan.assumptions.commuteMinutes)
+        assertEquals(15, plan.assumptions.bufferMinutes)
+        assertEquals(3, plan.alarms.size)
+        assertEquals("11:25", plan.alarms[0].time)
+        assertEquals(LocalDate.of(2026, 8, 26), plan.alarms[0].date)
+        assertEquals("gentle", plan.alarms[0].role)
+        assertTrue(plan.alarms[0].enabled)
+        assertFalse(plan.alarms[2].enabled)
+    }
+
+    @Test
+    fun `goal plan allows commute to be null and disabled to default true`() {
+        val result = interpreter.parse(
+            """{"status":"success","kind":"goal_plan","plan":{
+                "destinationLabel":"","targetTime":"13:00",
+                "sleepStartTime":"03:35","wakeTime":"11:35","leaveByTime":"12:05",
+                "sleepShortfallMinutes":0,
+                "assumptions":{"sleepMinutes":480,"preparationMinutes":30,"commuteMinutes":-1,"bufferMinutes":15},
+                "alarms":[
+                  {"time":"11:35","date":"2026-08-26","label":"Wake","role":"main","enabled":true}
+                ]
+            }}"""
+        )
+        val plan = result as AlarmInterpretResult.GoalPlan
+        assertNull(plan.assumptions.commuteMinutes)
+        assertEquals(1, plan.alarms.size)
+        assertTrue(plan.alarms[0].enabled)
+    }
+
+    @Test
+    fun `goal plan rejects missing assumptions`() {
+        val result = interpreter.parse(
+            """{"status":"success","kind":"goal_plan","plan":{
+                "destinationLabel":"x","targetTime":"13:00",
+                "sleepStartTime":"03:35","wakeTime":"11:35","leaveByTime":"12:05",
+                "assumptions":{},
+                "alarms":[{"time":"11:35","date":"2026-08-26","label":"W","role":"main","enabled":true}]
+            }}"""
+        )
+        assertTrue(result is AlarmInterpretResult.Failed)
+    }
+
+    @Test
+    fun `goal plan rejects more than three alarms`() {
+        val result = interpreter.parse(
+            """{"status":"success","kind":"goal_plan","plan":{
+                "destinationLabel":"x","targetTime":"13:00",
+                "sleepStartTime":"03:35","wakeTime":"11:35","leaveByTime":"12:05",
+                "assumptions":{"sleepMinutes":480,"preparationMinutes":30,"bufferMinutes":15},
+                "alarms":[
+                  {"time":"11:25","date":"2026-08-26","label":"1","role":"gentle","enabled":true},
+                  {"time":"11:30","date":"2026-08-26","label":"2","role":"main","enabled":true},
+                  {"time":"11:35","date":"2026-08-26","label":"3","role":"main","enabled":true},
+                  {"time":"11:40","date":"2026-08-26","label":"4","role":"backup","enabled":true}
+                ]
+            }}"""
+        )
+        assertTrue(result is AlarmInterpretResult.Failed)
+    }
+
+    @Test
+    fun `clarification carries a machine code`() {
+        val result = interpreter.parse(
+            """{"status":"clarification_required","clarificationQuestion":"How long is your commute?","clarificationCode":"commute_required"}"""
+        )
+        val clarification = result as AlarmInterpretResult.NeedsClarification
+        assertEquals("commute_required", clarification.code)
+    }
+
+    @Test
+    fun `request body carries planning preferences and conversation`() {
+        val prefs = AiPlanningPreferences(
+            targetSleepMinutes = 420,
+            preparationMinutes = 20,
+            commuteMinutes = 35,
+            bufferMinutes = 10
+        )
+        val body = interpreter.buildRequestBody(
+            text = "arrive by 9",
+            preferences = prefs,
+            conversation = listOf("40 minutes")
+        )
+        assertTrue(body.contains("\"targetSleepMinutes\":420"))
+        assertTrue(body.contains("\"preparationMinutes\":20"))
+        assertTrue(body.contains("\"commuteMinutes\":35"))
+        assertTrue(body.contains("\"bufferMinutes\":10"))
+        assertTrue(body.contains("\"content\":\"40 minutes\""))
+        assertTrue(body.contains("\"conversation\""))
     }
 }

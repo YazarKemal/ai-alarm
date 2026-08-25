@@ -142,7 +142,10 @@ fun AppNavigation(container: AppContainer) {
                         ?.savedStateHandle
                         ?.set(AiPreviewViewModel.AI_PREVIEW_RESULT_KEY, result)
                     navController.popBackStack()
-                }
+                },
+                // CREATE PLAN already scheduled the enabled alarms; return to Home
+                // (clearing the editor that led here).
+                onPlanCreated = { navController.popBackStack(Routes.HOME, inclusive = false) }
             )
         }
     }

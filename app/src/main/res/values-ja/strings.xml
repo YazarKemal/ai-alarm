@@ -85,7 +85,18 @@
     <string name="ai_setup_subtitle">PromptHaven AIプロキシによる自然言語設定</string>
     <string name="ai_setup_enabled">有効</string>
     <string name="ai_setup_disabled">設定が必要</string>
-    <string name="alarm_reliability">アラームの信頼性</string>
+
+    <string name="planning_preferences">プランニング設定</string>
+    <string name="planning_preferences_subtitle">プラン用の睡眠・準備・通勤・バックアップの既定値</string>
+    <string name="open">開く</string>
+    <string name="save">保存</string>
+    <string name="decrease">減らす</string>
+    <string name="increase">増やす</string>
+    <string name="wake_preference">起床の好み</string>
+    <string name="wake_pref_latest">ぎりぎり</string>
+    <string name="wake_pref_balanced">バランス</string>
+    <string name="wake_pref_early">早め</string>
+    <string name="pre_alarm">やさしい予告アラーム</string>    <string name="alarm_reliability">アラームの信頼性</string>
     <string name="exact_alarm_access">正確なアラームへのアクセス</string>
     <string name="notifications">通知</string>
     <string name="full_screen_alarms">全画面アラーム</string>
@@ -104,6 +115,26 @@
     <string name="refine_request">リクエストを調整</string>
     <string name="preview">プレビュー</string>
 
+    <string name="plan_header">PROMPTHAVEN プラン</string>
+    <string name="arrive_at">到着</string>
+    <string name="sleep_target">睡眠目標</string>
+    <string name="wake">起床</string>
+    <string name="leave_by">出発</string>
+    <string name="assumptions">前提条件</string>
+    <string name="create_plan">プランを作成</string>
+    <string name="edit_request">リクエストを編集</string>
+    <string name="clarification_placeholder">回答…</string>
+    <string name="send">送信</string>
+    <string name="sleep_shortfall_notice">睡眠は約%1$d分だけになり、目標より少なくなります。</string>
+    <string name="hours">時間</string>
+    <string name="minutes_short">分</string>
+    <string name="not_set">未設定</string>
+    <string name="commute">通勤</string>
+    <string name="buffer">余裕</string>
+    <string name="preparation">準備</string>
+    <string name="gentle_wake_up">やさしい起床</string>
+    <string name="backup_alarm">バックアップアラーム</string>
+    <string name="alarms">アラーム</string>
     <!-- Language -->
     <string name="language">言語</string>
     <string name="language_dialog_title">言語を選択</string>
