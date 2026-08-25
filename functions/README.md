@@ -4,6 +4,24 @@ Server-side `interpretAlarmRequest` endpoint. This is the ONLY place an AI
 provider key exists. The Android app holds no provider secret and only ever
 calls this public HTTPS endpoint.
 
+## Firebase codebase
+
+This project (`prompthaven-646fe`) is **shared** with other PromptHaven web
+functions from other repositories. This package is its own isolated codebase so
+the alarm app never causes the Firebase CLI to suggest deleting unrelated
+PromptHaven functions.
+
+- **codebase:** `alarm-ai` (see `firebase.json`)
+- **Deploy only this codebase:**
+  ```bash
+  firebase deploy --only functions:alarm-ai --project prompthaven-646fe
+  ```
+  Never run a bare `firebase deploy --only functions` in this repository — it
+  would touch every codebase on the shared project.
+- **AI model:** DeepSeek **`deepseek-v4-flash`** (default via `PROVIDER_MODEL`,
+  non-thinking mode). The model is server-side only and never exposed to the
+  Android app.
+
 ## Contract
 
 **Request** (POST, JSON) — the backend resolves relative dates like "tomorrow"
@@ -86,7 +104,7 @@ firebase login
 firebase use --add          # choose/alias your project
 firebase functions:secrets:set PROVIDER_API_KEY
 # Ensure APP_CHECK_ENFORCED=true is set as a runtime env for the deployed function.
-firebase deploy --only functions --project <PROJECT_ID>
+firebase deploy --only functions:alarm-ai --project <PROJECT_ID>
 ```
 
 Then supply the deployed function's base URL at app build time via the
@@ -120,12 +138,20 @@ the `x-firebase-app-check` header (see `AppCheckTokenProvider` /
 5. Deploy the backend with `APP_CHECK_ENFORCED=true` (see above).
 
 **Debug / local App Check token (only for testing against an enforcing
-backend):** enable the **Debug** provider in the App Check console to get a
-debug token, then add
-`FirebaseAppCheck.getInstance().installAppCheckProviderFactory(DebugAppCheckProviderFactory.getInstance())`
-in `AiAlarmApplication` for debug builds. In normal local development you do
-not need this — run the emulator with `APP_CHECK_ENFORCED` unset so no token is
-required.
+backend):** the app resolves the App Check provider per build variant via
+`AppCheckProviderFactoryResolver`:
+
+- **Debug builds** use `DebugAppCheckProviderFactory` (the
+  `firebase-appcheck-debug` dependency is `debugImplementation` only and the
+  resolver lives in the `debug` source set, so it can never ship in a release
+  APK/AAB). Enable the **Debug** provider in the App Check console, copy the
+  per-app debug token it prints, and (for the emulator / a local backend) set
+  `APP_CHECK_ENFORCED=true` on the function to exercise it.
+- **Release builds** always use `PlayIntegrityAppCheckProviderFactory` — never
+  the debug provider.
+
+In normal local development you do not need any token: run the emulator with
+`APP_CHECK_ENFORCED` unset so requests are allowed.
 
 ### Local Functions emulator + Android emulator
 
