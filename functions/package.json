@@ -11,7 +11,7 @@
     "build": "tsc",
     "test": "npm run build && node --test",
     "serve": "npm run build && firebase emulators:start --only functions",
-    "deploy": "npm run build && firebase deploy --only functions:interpretAlarmRequest"
+    "deploy": "npm run build && firebase deploy --only functions:alarm-ai --project prompthaven-646fe"
   },
   "dependencies": {
     "firebase-functions": "^6.3.0",
