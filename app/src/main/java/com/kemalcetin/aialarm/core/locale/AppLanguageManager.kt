@@ -29,7 +29,10 @@ import kotlinx.coroutines.runBlocking
  */
 class AppLanguageManager(context: Context) {
 
-    private val prefs = AppPreferences(context.applicationContext)
+    // Use the context as given — never assume `context.applicationContext` is
+    // non-null. The Application owns the single instance and constructs it only
+    // after attach, so the context passed here is always valid.
+    private val prefs = AppPreferences(context)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val current = AtomicReference<AppLanguage?>(null)
 

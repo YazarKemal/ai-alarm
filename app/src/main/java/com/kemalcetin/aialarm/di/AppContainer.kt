@@ -36,7 +36,11 @@ import kotlinx.coroutines.SupervisorJob
  * exposes a server-side proxy. API provider secrets must never ship inside an APK/AAB.
  * The alarm intelligence remains functional through the on-device learner.
  */
-class AppContainer(private val context: Context) {
+class AppContainer(
+    private val context: Context,
+    /** The single application-owned language manager (never a second instance). */
+    val appLanguageManager: AppLanguageManager
+) {
 
     private val applicationContext = context.applicationContext
 
@@ -74,15 +78,10 @@ class AppContainer(private val context: Context) {
     }
 
     val notificationManager: AlarmNotificationManager by lazy {
-        AlarmNotificationManager(applicationContext)
+        AlarmNotificationManager(applicationContext, appLanguageManager)
     }
 
     val appPreferences: AppPreferences by lazy { AppPreferences(applicationContext) }
-
-    /** User-selected application language (English default). */
-    val appLanguageManager: AppLanguageManager by lazy {
-        AppLanguageManager(applicationContext)
-    }
 
     val applicationScope: CoroutineScope by lazy {
         CoroutineScope(SupervisorJob() + Dispatchers.Default)
