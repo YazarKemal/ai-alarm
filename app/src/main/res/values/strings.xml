@@ -2,9 +2,84 @@
 <resources>
     <string name="app_name">PromptHaven Alarm</string>
     <string name="alarm_ringing_channel_name">PromptHaven Alarm</string>
-    <string name="alarm_ringing_channel_description">Aktif alarm bildirimi</string>
+    <string name="alarm_ringing_channel_description">Active alarm ringing notification</string>
     <string name="alarm_default_label">Alarm</string>
-    <string name="alarm_ringing">Alarm çalıyor</string>
-    <string name="snooze">Ertele</string>
-    <string name="dismiss">Kapat</string>
+    <string name="alarm_ringing">Alarm ringing</string>
+    <string name="snooze">Snooze</string>
+    <string name="dismiss">Dismiss</string>
+
+    <!-- Home -->
+    <string name="home_title">PromptHaven Alarm</string>
+    <string name="next_alarm">Next alarm</string>
+    <string name="no_alarm_yet">No alarm yet</string>
+    <string name="no_alarm_hint">Tap + to add an alarm.</string>
+    <string name="alarms_section">ALARMS</string>
+    <string name="one_time">One time</string>
+    <string name="add_alarm_desc">Add alarm</string>
+    <string name="settings_desc">Settings</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+
+    <!-- AI suggestion -->
+    <string name="ph_ai_name">PromptHaven AI</string>
+    <string name="ignore">IGNORE</string>
+    <string name="set_alarm">SET ALARM</string>
+
+    <!-- Clock -->
+    <string name="clock_style_title">Clock Style</string>
+
+    <!-- Editor -->
+    <string name="new_alarm">New Alarm</string>
+    <string name="edit_alarm">Edit Alarm</string>
+    <string name="repeat">Repeat</string>
+    <string name="label">Label</string>
+    <string name="alarm_label_hint">Alarm label</string>
+    <string name="alarm_sound">Alarm sound</string>
+    <string name="vibration">Vibration</string>
+    <string name="vibration_subtitle">Vibrate with the alarm</string>
+    <string name="snooze_duration">Snooze</string>
+    <string name="more_options">More options</string>
+    <string name="save_alarm">SAVE ALARM</string>
+    <string name="delete_alarm">Delete Alarm</string>
+    <string name="set_with_ai">Set with PromptHaven AI</string>
+    <string name="set_with_ai_hint">Describe your alarm in natural language</string>
+    <string name="ai_understood">PromptHaven understood</string>
+    <string name="apply_to_alarm">APPLY TO ALARM</string>
+    <string name="ready_to_apply">Ready to apply</string>
+    <string name="time_tap_hint">Tap the time to change it</string>
+
+    <!-- Ringing -->
+    <string name="snooze_action">SNOOZE 10 MINUTES</string>
+    <string name="hold_to_dismiss">HOLD TO DISMISS</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="appearance">APPEARANCE</string>
+    <string name="theme">Theme</string>
+    <string name="system_default">System default</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+    <string name="alarm_defaults">ALARM DEFAULTS</string>
+    <string name="default_snooze">Default snooze</string>
+    <string name="default_snooze_subtitle">Duration used when snoozing</string>
+    <string name="default_alarm_sound">Default alarm sound</string>
+    <string name="ph_ai_section">PROMPTHAVEN AI</string>
+    <string name="smart_suggestions">Smart alarm suggestions</string>
+    <string name="smart_suggestions_subtitle">Suggest likely forgotten alarms</string>
+    <string name="ai_setup">AI alarm setup</string>
+    <string name="ai_setup_enabled">Enabled</string>
+    <string name="ai_setup_disabled">Setup required</string>
+    <string name="alarm_reliability">ALARM RELIABILITY</string>
+    <string name="exact_alarm_access">Exact alarm access</string>
+    <string name="notifications">Notifications</string>
+    <string name="full_screen_alarms">Full-screen alarms</string>
+    <string name="battery_optimization">Battery optimization</string>
+    <string name="status_allowed">Allowed</string>
+    <string name="status_action_needed">Action needed</string>
+    <string name="status_optimized">Optimized</string>
+    <string name="status_recommended">Recommended</string>
+    <string name="about">ABOUT</string>
+    <string name="privacy">Privacy</string>
+    <string name="open_source_licenses">Open-source licenses</string>
+    <string name="ecosystem_footer">Part of the PromptHavenAI ecosystem</string>
 </resources>

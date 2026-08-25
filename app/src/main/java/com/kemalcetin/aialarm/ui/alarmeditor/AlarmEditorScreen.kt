@@ -76,10 +76,19 @@ private val snoozeOptions = listOf(5, 10, 15)
 fun AlarmEditorScreen(
     container: AppContainer,
     alarmId: Long,
-    onDone: () -> Unit
+    onDone: () -> Unit,
+    prefillHour: Int? = null,
+    prefillMinute: Int? = null,
+    prefillDays: Set<DayOfWeek>? = null
 ) {
     val viewModel: AlarmEditorViewModel = viewModel(
-        factory = AlarmEditorViewModel.factory(container, alarmId)
+        factory = AlarmEditorViewModel.factory(
+            container = container,
+            alarmId = alarmId,
+            prefillHour = prefillHour,
+            prefillMinute = prefillMinute,
+            prefillDays = prefillDays
+        )
     )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showTimePicker by remember { mutableStateOf(false) }

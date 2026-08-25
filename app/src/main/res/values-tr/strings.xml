@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PromptHaven Alarm</string>
+    <string name="alarm_ringing_channel_name">PromptHaven Alarm</string>
+    <string name="alarm_ringing_channel_description">Aktif alarm bildirimi</string>
+    <string name="alarm_default_label">Alarm</string>
+    <string name="alarm_ringing">Alarm çalıyor</string>
+    <string name="snooze">Ertele</string>
+    <string name="dismiss">Kapat</string>
+
+    <!-- Home -->
+    <string name="home_title">PromptHaven Alarm</string>
+    <string name="next_alarm">Sıradaki alarm</string>
+    <string name="no_alarm_yet">Henüz alarm yok</string>
+    <string name="no_alarm_hint">Alarm eklemek için + butonuna dokun.</string>
+    <string name="alarms_section">ALARMLAR</string>
+    <string name="one_time">Bir kez</string>
+    <string name="add_alarm_desc">Alarm ekle</string>
+    <string name="settings_desc">Ayarlar</string>
+    <string name="today">Bugün</string>
+    <string name="tomorrow">Yarın</string>
+
+    <!-- AI suggestion -->
+    <string name="ph_ai_name">PromptHaven AI</string>
+    <string name="ignore">YOK SAY</string>
+    <string name="set_alarm">ALARM KUR</string>
+
+    <!-- Clock -->
+    <string name="clock_style_title">Saat Stili</string>
+
+    <!-- Editor -->
+    <string name="new_alarm">Yeni Alarm</string>
+    <string name="edit_alarm">Alarmı Düzenle</string>
+    <string name="repeat">Tekrar</string>
+    <string name="label">Etiket</string>
+    <string name="alarm_label_hint">Alarm etiketi</string>
+    <string name="alarm_sound">Alarm sesi</string>
+    <string name="vibration">Titreşim</string>
+    <string name="vibration_subtitle">Zil ile birlikte titre</string>
+    <string name="snooze_duration">Erteleme</string>
+    <string name="more_options">Diğer seçenekler</string>
+    <string name="save_alarm">ALARMI KAYDET</string>
+    <string name="delete_alarm">Alarmı Sil</string>
+    <string name="set_with_ai">PromptHaven AI ile kur</string>
+    <string name="set_with_ai_hint">Alarmını doğal dille anlat</string>
+    <string name="ai_understood">PromptHaven anladı</string>
+    <string name="apply_to_alarm">ALARMA UYGULA</string>
+    <string name="ready_to_apply">Uygulanmaya hazır</string>
+    <string name="time_tap_hint">Zamanı değiştirmek için dokun</string>
+
+    <!-- Ringing -->
+    <string name="snooze_action">ERTELE 10 DAKİKA</string>
+    <string name="hold_to_dismiss">KAPATMAK İÇİN BASILI TUT</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ayarlar</string>
+    <string name="appearance">GÖRÜNÜM</string>
+    <string name="theme">Tema</string>
+    <string name="system_default">Sistem varsayılanı</string>
+    <string name="light">Açık</string>
+    <string name="dark">Koyu</string>
+    <string name="alarm_defaults">ALARM VARSAYILANLARI</string>
+    <string name="default_snooze">Varsayılan erteleme</string>
+    <string name="default_snooze_subtitle">Ertelemede kullanılacak süre</string>
+    <string name="default_alarm_sound">Varsayılan alarm sesi</string>
+    <string name="ph_ai_section">PROMPTHAVEN AI</string>
+    <string name="smart_suggestions">Akıllı alarm önerileri</string>
+    <string name="smart_suggestions_subtitle">Muhtemel unutulan alarmları öner</string>
+    <string name="ai_setup">AI alarm kurulumu</string>
+    <string name="ai_setup_enabled">Etkin</string>
+    <string name="ai_setup_disabled">Kurulum gerekli</string>
+    <string name="alarm_reliability">ALARM GÜVENİLİRLİĞİ</string>
+    <string name="exact_alarm_access">Tam zaman alarm erişimi</string>
+    <string name="notifications">Bildirimler</string>
+    <string name="full_screen_alarms">Tam ekran alarmlar</string>
+    <string name="battery_optimization">Pil optimizasyonu</string>
+    <string name="status_allowed">İzinli</string>
+    <string name="status_action_needed">İşlem gerekli</string>
+    <string name="status_optimized">Optimize edilmiş</string>
+    <string name="status_recommended">Önerilen</string>
+    <string name="about">HAKKINDA</string>
+    <string name="privacy">Gizlilik</string>
+    <string name="open_source_licenses">Açık kaynak lisansları</string>
+    <string name="ecosystem_footer">PromptHavenAI ekosisteminin parçası</string>
+</resources>

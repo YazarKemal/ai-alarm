@@ -36,7 +36,10 @@ class AlarmEditorViewModel(
     private val repository: AlarmRepository,
     private val scheduler: AlarmScheduler,
     private val preferences: AppPreferences,
-    private val alarmId: Long
+    private val alarmId: Long,
+    private val prefillHour: Int? = null,
+    private val prefillMinute: Int? = null,
+    private val prefillDays: Set<DayOfWeek>? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AlarmEditorUiState(alarmId = alarmId, isEdit = alarmId > 0))
@@ -62,7 +65,14 @@ class AlarmEditorViewModel(
                     )
                 }
             } else {
-                _uiState.update { it.copy(snoozeMinutes = defaultSnooze) }
+                _uiState.update {
+                    it.copy(
+                        snoozeMinutes = defaultSnooze,
+                        hour = prefillHour ?: it.hour,
+                        minute = prefillMinute ?: it.minute,
+                        repeatDays = prefillDays ?: it.repeatDays
+                    )
+                }
             }
         }
     }
@@ -135,14 +145,23 @@ class AlarmEditorViewModel(
     )
 
     companion object {
-        fun factory(container: AppContainer, alarmId: Long): ViewModelProvider.Factory =
+        fun factory(
+            container: AppContainer,
+            alarmId: Long,
+            prefillHour: Int? = null,
+            prefillMinute: Int? = null,
+            prefillDays: Set<DayOfWeek>? = null
+        ): ViewModelProvider.Factory =
             viewModelFactory {
                 initializer {
                     AlarmEditorViewModel(
                         repository = container.alarmRepository,
                         scheduler = container.alarmScheduler,
                         preferences = container.appPreferences,
-                        alarmId = alarmId
+                        alarmId = alarmId,
+                        prefillHour = prefillHour,
+                        prefillMinute = prefillMinute,
+                        prefillDays = prefillDays
                     )
                 }
             }

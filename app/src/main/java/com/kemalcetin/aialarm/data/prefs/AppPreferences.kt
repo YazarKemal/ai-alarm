@@ -5,7 +5,10 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.kemalcetin.aialarm.ui.clock.ClockStyle
+import com.kemalcetin.aialarm.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -37,12 +40,37 @@ class AppPreferences(private val context: Context) {
         context.dataStore.edit { prefs -> prefs[KEY_AI_LAST_AUTO_CREATE] = epochMillis }
     }
 
+    val clockStyle: Flow<ClockStyle> = context.dataStore.data
+        .map { prefs ->
+            prefs[KEY_CLOCK_STYLE]
+                ?.let { runCatching { ClockStyle.valueOf(it) }.getOrNull() }
+                ?: DEFAULT_CLOCK_STYLE
+        }
+
+    suspend fun setClockStyle(style: ClockStyle) {
+        context.dataStore.edit { prefs -> prefs[KEY_CLOCK_STYLE] = style.name }
+    }
+
+    val themeMode: Flow<ThemeMode> = context.dataStore.data
+        .map { prefs ->
+            prefs[KEY_THEME_MODE]
+                ?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
+                ?: ThemeMode.SYSTEM
+        }
+
+    suspend fun setThemeMode(mode: ThemeMode) {
+        context.dataStore.edit { prefs -> prefs[KEY_THEME_MODE] = mode.name }
+    }
+
     companion object {
         const val DEFAULT_SNOOZE = 5
         // Never let a newly installed app create alarms autonomously without an explicit opt-in.
         const val DEFAULT_AUTO_CREATE_ENABLED = false
+        val DEFAULT_CLOCK_STYLE = ClockStyle.DIGITAL_MINIMAL
         private val KEY_DEFAULT_SNOOZE = intPreferencesKey("default_snooze_minutes")
         private val KEY_AUTO_CREATE_ENABLED = booleanPreferencesKey("ai_auto_create_enabled")
         private val KEY_AI_LAST_AUTO_CREATE = longPreferencesKey("ai_last_auto_create_time")
+        private val KEY_CLOCK_STYLE = stringPreferencesKey("clock_style")
+        private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
     }
 }
