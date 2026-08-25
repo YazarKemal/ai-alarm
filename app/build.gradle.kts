@@ -1,10 +1,3 @@
-import java.util.Properties
-
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
-    if (file.exists()) file.inputStream().use { load(it) }
-}
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,16 +10,13 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.kemalcetin.aialarm"
+        applicationId = "com.prompthavenai.alarm"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        val deepSeekKey = localProperties.getProperty("DEEPSEEK_API_KEY", "") ?: ""
-        buildConfigField("String", "DEEPSEEK_API_KEY", "\"${deepSeekKey.replace("\\", "\\\\")}\"")
     }
 
     buildTypes {
