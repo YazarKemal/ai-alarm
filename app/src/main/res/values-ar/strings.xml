@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_description">إشعار تنبيه نشط يرن</string>
+    <string name="alarm_default_label">منبّه</string>
+    <string name="alarm_ringing">المنبّه يرن</string>
+    <string name="snooze">غفوة</string>
+    <string name="dismiss">تجاهل</string>
+
+    <!-- Home -->
+    <string name="home_title">Smart Alarm Clock</string>
+    <string name="next_alarm">المنبّه التالي</string>
+    <string name="no_alarm_yet">لا يوجد منبّه بعد</string>
+    <string name="no_alarm_hint">اضغط على + لإضافة منبّه.</string>
+    <string name="alarms_section">المنبّهات</string>
+    <string name="one_time">مرة واحدة</string>
+    <string name="add_alarm_desc">إضافة منبّه</string>
+    <string name="settings_desc">الإعدادات</string>
+    <string name="today">اليوم</string>
+    <string name="tomorrow">غداً</string>
+    <string name="add_alarm">إضافة منبّه</string>
+    <string name="notification_banner">الإشعارات معطّلة؛ قد لا تظهر التنبيهات بملء الشاشة.</string>
+    <string name="exact_alarm_banner">الوصول الدقيق إلى المنبّه مطلوب لمنبّهات موثوقة.</string>
+    <string name="fullscreen_banner">الوصول إلى المنبّه بملء الشاشة معطّل.</string>
+    <string name="allow">سماح</string>
+    <string name="open_settings">الإعدادات</string>
+
+    <!-- AI suggestion -->
+    <string name="ph_ai_name">PromptHaven AI</string>
+    <string name="ignore">تجاهل</string>
+    <string name="set_alarm">ضبط المنبّه</string>
+
+    <!-- Clock -->
+    <string name="clock_style_title">نمط الساعة</string>
+    <string name="clock_style_digital_minimal">رقمي بسيط</string>
+    <string name="clock_style_digital_bold">رقمي عريض</string>
+    <string name="clock_style_digital_night">رقمي ليلي</string>
+    <string name="clock_style_analog_classic">تناظري كلاسيكي</string>
+    <string name="clock_style_analog_minimal">تناظري بسيط</string>
+    <string name="clock_style_analog_gold">تناظري ذهبي</string>
+
+    <!-- Editor -->
+    <string name="new_alarm">منبّه جديد</string>
+    <string name="edit_alarm">تعديل المنبّه</string>
+    <string name="repeat">تكرار</string>
+    <string name="label">الملصق</string>
+    <string name="alarm_label_hint">ملصق المنبّه</string>
+    <string name="alarm_sound">صوت المنبّه</string>
+    <string name="vibration">اهتزاز</string>
+    <string name="vibration_subtitle">الاهتزاز مع المنبّه</string>
+    <string name="snooze_duration">غفوة</string>
+    <string name="snooze_minutes">د</string>
+    <string name="more_options">خيارات أخرى</string>
+    <string name="save_alarm">حفظ المنبّه</string>
+    <string name="delete_alarm">حذف المنبّه</string>
+    <string name="set_with_ai">الضبط باستخدام PromptHaven AI</string>
+    <string name="set_with_ai_hint">صف منبّهك بلغة طبيعية</string>
+    <string name="ai_understood">فهم PromptHaven</string>
+    <string name="apply_to_alarm">تطبيق على المنبّه</string>
+    <string name="ready_to_apply">جاهز للتطبيق</string>
+    <string name="time_tap_hint">اضغط على الوقت لتغييره</string>
+    <string name="ok">موافق</string>
+    <string name="cancel">إلغاء</string>
+
+    <!-- Ringing -->
+    <string name="snooze_action">غفوة 10 دقائق</string>
+    <string name="hold_to_dismiss">اضغط مطولاً للتجاهل</string>
+
+    <!-- Settings -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="appearance">المظهر</string>
+    <string name="theme">السمة</string>
+    <string name="system_default">الافتراضي للنظام</string>
+    <string name="light">فاتح</string>
+    <string name="dark">داكن</string>
+    <string name="alarm_defaults">إعدادات المنبّه الافتراضية</string>
+    <string name="default_snooze">الغفوة الافتراضية</string>
+    <string name="default_snooze_subtitle">المدة المستخدمة عند الغفوة</string>
+    <string name="default_alarm_sound">صوت المنبّه الافتراضي</string>
+    <string name="ph_ai_section">PROMPTHAVEN AI</string>
+    <string name="smart_suggestions">اقتراحات منبّه ذكية</string>
+    <string name="smart_suggestions_subtitle">اقتراح منبّهات قد تُنسى</string>
+    <string name="ai_setup">إعداد المنبّه بالذكاء الاصطناعي</string>
+    <string name="ai_setup_subtitle">إعداد بلغة طبيعية عبر وكيل PromptHaven AI</string>
+    <string name="ai_setup_enabled">مفعّل</string>
+    <string name="ai_setup_disabled">الإعداد مطلوب</string>
+
+    <string name="planning_preferences">تفضيلات التخطيط</string>
+    <string name="planning_preferences_subtitle">القيم الافتراضية للنوم والتحضير والتنقل والاحتياط للخطط</string>
+    <string name="open">فتح</string>
+    <string name="save">حفظ</string>
+    <string name="decrease">تقليل</string>
+    <string name="increase">زيادة</string>
+    <string name="wake_preference">تفضيل الاستيقاظ</string>
+    <string name="wake_pref_latest">في أقرب وقت</string>
+    <string name="wake_pref_balanced">متوازن</string>
+    <string name="wake_pref_early">مبكر</string>
+    <string name="pre_alarm">منبّه تحذيري لطيف</string>    <string name="alarm_reliability">موثوقية المنبّه</string>
+    <string name="exact_alarm_access">الوصول الدقيق إلى المنبّه</string>
+    <string name="notifications">الإشعارات</string>
+    <string name="full_screen_alarms">منبّهات بملء الشاشة</string>
+    <string name="battery_optimization">تحسين البطارية</string>
+    <string name="status_allowed">مسموح</string>
+    <string name="status_action_needed">إجراء مطلوب</string>
+    <string name="status_optimized">مُحسَّن</string>
+    <string name="status_recommended">موصى به</string>
+    <string name="about">حول</string>
+    <string name="privacy">الخصوصية</string>
+    <string name="open_source_licenses">تراخيص المصدر المفتوح</string>
+    <string name="ecosystem_footer">Smart Alarm Clock\nبواسطة PromptHaven Studio</string>
+    <string name="back">رجوع</string>
+    <string name="ai_preview">معاينة الذكاء الاصطناعي</string>
+    <string name="retry">إعادة المحاولة</string>
+    <string name="refine_request">تحسين الطلب</string>
+    <string name="preview">معاينة</string>
+
+    <string name="plan_header">خطة PROMPTHAVEN</string>
+    <string name="arrive_at">الوصول في</string>
+    <string name="sleep_target">هدف النوم</string>
+    <string name="wake">الاستيقاظ</string>
+    <string name="leave_by">المغادرة في</string>
+    <string name="assumptions">الافتراضات</string>
+    <string name="create_plan">إنشاء الخطة</string>
+    <string name="edit_request">تعديل الطلب</string>
+    <string name="clarification_placeholder">إجابتك…</string>
+    <string name="send">إرسال</string>
+    <string name="sleep_shortfall_notice">ستنام فقط نحو %1$d دقيقة — أقل من هدفك.</string>
+    <string name="hours">س</string>
+    <string name="minutes_short">د</string>
+    <string name="not_set">غير محدد</string>
+    <string name="commute">التنقل</string>
+    <string name="buffer">هامش</string>
+    <string name="preparation">التحضير</string>
+    <string name="gentle_wake_up">استيقاظ لطيف</string>
+    <string name="backup_alarm">منبّه احتياطي</string>
+    <string name="alarms">المنبهات</string>
+    <!-- Language -->
+    <string name="language">اللغة</string>
+    <string name="language_dialog_title">اختر اللغة</string>
+
+    <!-- AI errors -->
+    <string name="ai_parse_error">لم أتمكن من فهم هذا الطلب. جرّب وقتاً مثل 07:30 ويوماً.</string>
+
+    <!-- Home AI suggestion -->
+    <string name="ai_suggestion_single">عادةً ما تضبط منبّهًا في %1$s. لم يتم ضبط أي منبّه غداً.</string>
+    <string name="ai_suggestion_weekdays">عادةً ما تضبط منبّهًا في %1$s في أيام الأسبوع. لم يتم ضبط أي منبّه غداً.</string>
+    <string name="ai_suggestion_days">عادةً ما تضبط منبّهًا في %1$s في %2$s. لم يتم ضبط أي منبّه غداً.</string>
+
+    <!-- Theme label -->
+    <string name="theme_auto">تلقائي</string>
+    <string name="ai_clarification_commute_required">كم يستغرق وصولك إلى هناك عادة؟</string>
+    <string name="ai_clarification_commute_minutes_required">هل يمكنك كتابة وقت السفر بالدقائق؟ على سبيل المثال: 60 دقيقة.</string>
+</resources>

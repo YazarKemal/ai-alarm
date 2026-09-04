@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.kemalcetin.aialarm.core.alarm.AlarmScheduler
 import com.kemalcetin.aialarm.core.alarm.DebugAlarmScheduler
+import com.kemalcetin.aialarm.core.alarm.NextAlarmCalculator
 import com.kemalcetin.aialarm.core.permission.ExactAlarmPermissionManager
 import com.kemalcetin.aialarm.core.permission.FullScreenIntentPermissionManager
 import com.kemalcetin.aialarm.core.permission.NotificationPermissionManager
@@ -17,8 +18,7 @@ import com.kemalcetin.aialarm.domain.repository.AlarmRepository
 import com.kemalcetin.aialarm.feature.assistant.data.AlarmEventRepository
 import com.kemalcetin.aialarm.feature.assistant.learning.ExpectedSlot
 import com.kemalcetin.aialarm.feature.assistant.learning.ScheduleLearner
-import com.kemalcetin.aialarm.feature.assistant.model.AlarmEvent
-import com.kemalcetin.aialarm.ui.common.formatExpectedSlot
+import com.kemalcetin.aialarm.ui.clock.ClockStyle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -39,12 +39,9 @@ data class PermissionStatus(
 data class HomeUiState(
     val alarms: List<Alarm> = emptyList(),
     val permissions: PermissionStatus = PermissionStatus(),
-    val aiAutoCreateEnabled: Boolean = true,
-    val aiLastAutoCreateTime: Long = 0L,
-    val aiSlots: List<ExpectedSlot> = emptyList(),
-    val aiNextExpected: String? = null,
-    val aiRecentEvents: List<AlarmEvent> = emptyList(),
-    val aiDeepSeekConfigured: Boolean = false
+    val nextAlarm: ZonedDateTime? = null,
+    val clockStyle: ClockStyle = AppPreferences.DEFAULT_CLOCK_STYLE,
+    val aiSuggestion: ExpectedSlot? = null
 )
 
 class HomeViewModel(
@@ -56,30 +53,30 @@ class HomeViewModel(
     private val fullScreenPermission: FullScreenIntentPermissionManager,
     private val preferences: AppPreferences,
     private val alarmEventRepository: AlarmEventRepository,
-    private val deepSeekConfigured: Boolean
+    private val nextAlarmCalculator: NextAlarmCalculator
 ) : ViewModel() {
 
     private val permissions = MutableStateFlow(computePermissions())
     private val learner = ScheduleLearner()
+    private val dismissedSuggestions = mutableSetOf<String>()
 
     val uiState: StateFlow<HomeUiState> = combine(
         repository.observeAlarms(),
         permissions,
-        preferences.autoCreateEnabled,
-        preferences.aiLastAutoCreateTime,
+        preferences.clockStyle,
         alarmEventRepository.observeRecent(50)
-    ) { alarms, perms, autoCreate, lastTime, events ->
-        val slots = learner.learnSlots(events)
-        val next = learner.nextExpectedTrigger(slots, alarms, ZonedDateTime.now())
+    ) { alarms, perms, clockStyle, events ->
+        val now = ZonedDateTime.now()
+        val next = alarms
+            .mapNotNull { nextAlarmCalculator.nextTrigger(it, now) }
+            .minByOrNull { it.toEpochSecond() }
+        val suggestion = forgottenSuggestion(alarms, events, now)
         HomeUiState(
             alarms = alarms,
             permissions = perms,
-            aiAutoCreateEnabled = autoCreate,
-            aiLastAutoCreateTime = lastTime,
-            aiSlots = slots,
-            aiNextExpected = next?.let { formatExpectedSlot(it) },
-            aiRecentEvents = events.take(5),
-            aiDeepSeekConfigured = deepSeekConfigured
+            nextAlarm = next,
+            clockStyle = clockStyle,
+            aiSuggestion = suggestion
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
@@ -87,25 +84,28 @@ class HomeViewModel(
         permissions.value = computePermissions()
     }
 
+    fun dismissSuggestion(slot: ExpectedSlot) {
+        dismissedSuggestions.add(slotKey(slot))
+    }
+
+    private fun forgottenSuggestion(
+        enabledAlarms: List<Alarm>,
+        events: List<com.kemalcetin.aialarm.feature.assistant.model.AlarmEvent>,
+        now: ZonedDateTime
+    ): ExpectedSlot? {
+        val slots = learner.learnSlots(events)
+        val next = learner.nextExpectedTrigger(slots, enabledAlarms, now) ?: return null
+        return if (dismissedSuggestions.contains(slotKey(next))) null else next
+    }
+
+    private fun slotKey(slot: ExpectedSlot): String =
+        "${slot.hour}:${slot.minute}:${slot.repeatDays.sorted().joinToString(",")}"
+
     private fun computePermissions() = PermissionStatus(
         canScheduleExact = exactPermission.canScheduleExactAlarms(),
         notificationsGranted = notificationPermission.isGranted(),
         fullScreenAvailable = fullScreenPermission.canUseFullScreenIntent()
     )
-
-    fun setAiAutoCreateEnabled(enabled: Boolean) {
-        viewModelScope.launch { preferences.setAutoCreateEnabled(enabled) }
-    }
-
-    fun formatAiLastAutoCreate(epochMillis: Long): String =
-        if (epochMillis <= 0L) {
-            "—"
-        } else {
-            Instant.ofEpochMilli(epochMillis)
-                .atZone(ZoneId.systemDefault())
-                .toLocalTime()
-                .toString()
-        }
 
     fun setAlarmEnabled(alarm: Alarm, enabled: Boolean) {
         viewModelScope.launch {
@@ -159,7 +159,7 @@ class HomeViewModel(
                     fullScreenPermission = container.fullScreenIntentPermissionManager,
                     preferences = container.appPreferences,
                     alarmEventRepository = container.alarmEventRepository,
-                    deepSeekConfigured = container.aiInsightsProvider != null
+                    nextAlarmCalculator = container.nextAlarmCalculator
                 )
             }
         }

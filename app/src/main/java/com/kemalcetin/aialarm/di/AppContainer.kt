@@ -1,13 +1,14 @@
 package com.kemalcetin.aialarm.di
 
 import android.content.Context
-import com.kemalcetin.aialarm.BuildConfig
 import com.kemalcetin.aialarm.core.alarm.AlarmController
 import com.kemalcetin.aialarm.core.alarm.AlarmNotificationManager
 import com.kemalcetin.aialarm.core.alarm.AlarmScheduler
 import com.kemalcetin.aialarm.core.alarm.AndroidAlarmScheduler
 import com.kemalcetin.aialarm.core.alarm.DebugAlarmScheduler
 import com.kemalcetin.aialarm.core.alarm.NextAlarmCalculator
+import com.kemalcetin.aialarm.core.locale.AppLanguageManager
+import com.kemalcetin.aialarm.core.permission.BatteryOptimizationManager
 import com.kemalcetin.aialarm.core.permission.ExactAlarmPermissionManager
 import com.kemalcetin.aialarm.core.permission.FullScreenIntentPermissionManager
 import com.kemalcetin.aialarm.core.permission.NotificationPermissionManager
@@ -19,19 +20,33 @@ import com.kemalcetin.aialarm.feature.assistant.AiWatchdogScheduler
 import com.kemalcetin.aialarm.feature.assistant.data.AlarmEventRepository
 import com.kemalcetin.aialarm.feature.assistant.data.AlarmEventRepositoryImpl
 import com.kemalcetin.aialarm.feature.assistant.engine.AiAlarmEngine
+import com.kemalcetin.aialarm.feature.assistant.network.AiAlarmInterpreter
 import com.kemalcetin.aialarm.feature.assistant.network.AiInsightsProvider
-import com.kemalcetin.aialarm.feature.assistant.network.DeepSeekInsightsProvider
+import com.kemalcetin.aialarm.feature.assistant.network.AppCheckTokenProvider
+import com.kemalcetin.aialarm.feature.assistant.network.FirebaseAppCheckTokenProvider
+import com.kemalcetin.aialarm.feature.assistant.network.PromptHavenAiAlarmInterpreter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 
 /**
- * Lightweight application-level dependency container. We can migrate to Hilt
- * later if the application grows; manual injection is sufficient for v0.1.
+ * Lightweight application-level dependency container.
+ *
+ * Remote AI is intentionally disabled in the Android client until PromptHavenAI
+ * exposes a server-side proxy. API provider secrets must never ship inside an APK/AAB.
+ * The alarm intelligence remains functional through the on-device learner.
  */
-class AppContainer(private val context: Context) {
+class AppContainer(
+    private val context: Context,
+    /** The single application-owned language manager (never a second instance). */
+    val appLanguageManager: AppLanguageManager
+) {
 
     private val applicationContext = context.applicationContext
+
+    /** Public access to the application context for non-lazy consumers. */
+    val appContext: Context get() = applicationContext
 
     val database: AiAlarmDatabase by lazy { AiAlarmDatabase.create(applicationContext) }
 
@@ -47,6 +62,10 @@ class AppContainer(private val context: Context) {
         NotificationPermissionManager(applicationContext)
     }
 
+    val batteryOptimizationManager: BatteryOptimizationManager by lazy {
+        BatteryOptimizationManager(applicationContext)
+    }
+
     val fullScreenIntentPermissionManager: FullScreenIntentPermissionManager by lazy {
         FullScreenIntentPermissionManager(applicationContext)
     }
@@ -60,7 +79,7 @@ class AppContainer(private val context: Context) {
     }
 
     val notificationManager: AlarmNotificationManager by lazy {
-        AlarmNotificationManager(applicationContext)
+        AlarmNotificationManager(applicationContext, appLanguageManager)
     }
 
     val appPreferences: AppPreferences by lazy { AppPreferences(applicationContext) }
@@ -73,10 +92,25 @@ class AppContainer(private val context: Context) {
         AlarmEventRepositoryImpl(database.alarmEventDao())
     }
 
-    val aiInsightsProvider: AiInsightsProvider? by lazy {
-        BuildConfig.DEEPSEEK_API_KEY.takeIf { it.isNotBlank() }?.let {
-            DeepSeekInsightsProvider(it)
-        }
+    val aiInsightsProvider: AiInsightsProvider? = null
+
+    /** Supplies the Firebase App Check token for AI-proxy requests. */
+    val appCheckTokenProvider: AppCheckTokenProvider by lazy {
+        FirebaseAppCheckTokenProvider()
+    }
+
+    /** Server-side PromptHaven AI proxy client. No provider secret on device. */
+    val aiAlarmInterpreter: AiAlarmInterpreter by lazy {
+        PromptHavenAiAlarmInterpreter(
+            tokenProvider = appCheckTokenProvider,
+            // The AI request's locale is the user-selected APP language (English
+            // default), not the device locale, so the backend answers in the
+            // user's chosen language.
+            localeProvider = { appLanguageManager.current().aiTag },
+            // Only the planning preferences needed for the current request are
+            // sent; the full local profile is never uploaded.
+            planningPreferencesProvider = { appPreferences.aiPlanningPreferences.first() }
+        )
     }
 
     val aiAlarmEngine: AiAlarmEngine by lazy {

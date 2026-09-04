@@ -1,10 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AI Alarm</string>
-    <string name="alarm_ringing_channel_name">Alarm</string>
+    <string name="app_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_name">Smart Alarm Clock</string>
     <string name="alarm_ringing_channel_description">Active alarm ringing notification</string>
     <string name="alarm_default_label">Alarm</string>
     <string name="alarm_ringing">Alarm ringing</string>
     <string name="snooze">Snooze</string>
     <string name="dismiss">Dismiss</string>
+
+    <!-- Home -->
+    <string name="home_title">Smart Alarm Clock</string>
+    <string name="next_alarm">Next alarm</string>
+    <string name="no_alarm_yet">No alarm yet</string>
+    <string name="no_alarm_hint">Tap + to add an alarm.</string>
+    <string name="alarms_section">ALARMS</string>
+    <string name="one_time">One time</string>
+    <string name="add_alarm_desc">Add alarm</string>
+    <string name="settings_desc">Settings</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="add_alarm">Add Alarm</string>
+    <string name="notification_banner">Notifications are off; full-screen alerts may not show.</string>
+    <string name="exact_alarm_banner">Exact alarm access is needed for reliable alarms.</string>
+    <string name="fullscreen_banner">Full-screen alarm access is off.</string>
+    <string name="allow">Allow</string>
+    <string name="open_settings">Settings</string>
+
+    <!-- AI suggestion -->
+    <string name="ph_ai_name">PromptHaven AI</string>
+    <string name="ignore">IGNORE</string>
+    <string name="set_alarm">SET ALARM</string>
+
+    <!-- Clock -->
+    <string name="clock_style_title">Clock Style</string>
+    <string name="clock_style_digital_minimal">Digital Minimal</string>
+    <string name="clock_style_digital_bold">Digital Bold</string>
+    <string name="clock_style_digital_night">Digital Night</string>
+    <string name="clock_style_analog_classic">Analog Classic</string>
+    <string name="clock_style_analog_minimal">Analog Minimal</string>
+    <string name="clock_style_analog_gold">Analog Gold</string>
+
+    <!-- Editor -->
+    <string name="new_alarm">New Alarm</string>
+    <string name="edit_alarm">Edit Alarm</string>
+    <string name="repeat">Repeat</string>
+    <string name="label">Label</string>
+    <string name="alarm_label_hint">Alarm label</string>
+    <string name="alarm_sound">Alarm sound</string>
+    <string name="vibration">Vibration</string>
+    <string name="vibration_subtitle">Vibrate with the alarm</string>
+    <string name="snooze_duration">Snooze</string>
+    <string name="snooze_minutes">min</string>
+    <string name="more_options">More options</string>
+    <string name="save_alarm">SAVE ALARM</string>
+    <string name="delete_alarm">Delete Alarm</string>
+    <string name="set_with_ai">Set with PromptHaven AI</string>
+    <string name="set_with_ai_hint">Describe your alarm in natural language</string>
+    <string name="ai_understood">PromptHaven understood</string>
+    <string name="apply_to_alarm">APPLY TO ALARM</string>
+    <string name="ready_to_apply">Ready to apply</string>
+    <string name="time_tap_hint">Tap the time to change it</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Ringing -->
+    <string name="snooze_action">SNOOZE 10 MINUTES</string>
+    <string name="hold_to_dismiss">HOLD TO DISMISS</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="appearance">APPEARANCE</string>
+    <string name="theme">Theme</string>
+    <string name="system_default">System default</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+    <string name="alarm_defaults">ALARM DEFAULTS</string>
+    <string name="default_snooze">Default snooze</string>
+    <string name="default_snooze_subtitle">Duration used when snoozing</string>
+    <string name="default_alarm_sound">Default alarm sound</string>
+    <string name="ph_ai_section">PROMPTHAVEN AI</string>
+    <string name="smart_suggestions">Smart alarm suggestions</string>
+    <string name="smart_suggestions_subtitle">Suggest likely forgotten alarms</string>
+    <string name="ai_setup">AI alarm setup</string>
+    <string name="ai_setup_subtitle">Natural-language setup via the PromptHaven AI proxy</string>
+    <string name="ai_setup_enabled">Enabled</string>
+    <string name="ai_setup_disabled">Setup required</string>
+    <string name="planning_preferences">Planning preferences</string>
+    <string name="planning_preferences_subtitle">Sleep, prep, commute and backup defaults for goal plans</string>
+    <string name="open">Open</string>
+    <string name="save">Save</string>
+    <string name="decrease">Decrease</string>
+    <string name="increase">Increase</string>
+    <string name="wake_preference">Wake preference</string>
+    <string name="wake_pref_latest">Latest</string>
+    <string name="wake_pref_balanced">Balanced</string>
+    <string name="wake_pref_early">Early</string>
+    <string name="pre_alarm">Gentle pre-alarm</string>
+    <string name="alarm_reliability">ALARM RELIABILITY</string>
+    <string name="exact_alarm_access">Exact alarm access</string>
+    <string name="notifications">Notifications</string>
+    <string name="full_screen_alarms">Full-screen alarms</string>
+    <string name="battery_optimization">Battery optimization</string>
+    <string name="status_allowed">Allowed</string>
+    <string name="status_action_needed">Action needed</string>
+    <string name="status_optimized">Optimized</string>
+    <string name="status_recommended">Recommended</string>
+    <string name="about">ABOUT</string>
+    <string name="privacy">Privacy</string>
+    <string name="open_source_licenses">Open-source licenses</string>
+    <string name="ecosystem_footer">Smart Alarm Clock\nby PromptHaven Studio</string>
+    <string name="back">Back</string>
+    <string name="ai_preview">AI Preview</string>
+    <string name="retry">Retry</string>
+    <string name="refine_request">Refine request</string>
+    <string name="preview">Preview</string>
+
+    <!-- Plan preview -->
+    <string name="plan_header">PROMPTHAVEN PLAN</string>
+    <string name="arrive_at">Arrive at</string>
+    <string name="sleep_target">Sleep target</string>
+    <string name="wake">Wake</string>
+    <string name="leave_by">Leave by</string>
+    <string name="assumptions">Assumptions</string>
+    <string name="create_plan">CREATE PLAN</string>
+    <string name="edit_request">Edit request</string>
+    <string name="clarification_placeholder">Your answer…</string>
+    <string name="send">Send</string>
+    <string name="sleep_shortfall_notice">You\'ll only get about %1$d min of sleep — less than your target.</string>
+    <string name="hours">h</string>
+    <string name="minutes_short">min</string>
+    <string name="not_set">Not set</string>
+    <string name="commute">Commute</string>
+    <string name="buffer">Buffer</string>
+    <string name="preparation">Preparation</string>
+    <string name="gentle_wake_up">Gentle wake-up</string>
+    <string name="backup_alarm">Backup alarm</string>
+    <string name="alarms">Alarms</string>
+
+    <!-- Language -->
+    <string name="language">Language</string>
+    <string name="language_dialog_title">Choose language</string>
+
+    <!-- AI errors -->
+    <string name="ai_parse_error">Couldn\'t understand that request. Try a time like 07:30 and a day.</string>
+
+    <!-- Home AI suggestion -->
+    <string name="ai_suggestion_single">You usually set an alarm at %1$s. No alarm is set for tomorrow.</string>
+    <string name="ai_suggestion_weekdays">You usually set a %1$s alarm on weekdays. No alarm is set for tomorrow.</string>
+    <string name="ai_suggestion_days">You usually set a %1$s alarm on %2$s. No alarm is set for tomorrow.</string>
+
+    <!-- Theme label -->
+    <string name="theme_auto">Auto</string>
+    <string name="ai_clarification_commute_required">How long does it usually take you to get there?</string>
+    <string name="ai_clarification_commute_minutes_required">Please enter the travel time in minutes, for example: 60 minutes.</string>
 </resources>

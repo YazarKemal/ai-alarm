@@ -1,0 +1,7 @@
+# Dependencies and compiled output — never commit these.
+node_modules/
+lib/
+
+# Local env / secrets — never commit.
+.env
+*.env

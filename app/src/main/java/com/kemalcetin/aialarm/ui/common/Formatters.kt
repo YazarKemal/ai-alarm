@@ -7,8 +7,10 @@ import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
 
+// Use Locale.ROOT so times always render as 0-9 Western digits, keeping clock
+// digits understandable regardless of the app language (e.g. Arabic RTL).
 fun formatTime(hour: Int, minute: Int): String =
-    String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
+    String.format(Locale.ROOT, "%02d:%02d", hour, minute)
 
 private val orderedDays = listOf(
     DayOfWeek.MONDAY,

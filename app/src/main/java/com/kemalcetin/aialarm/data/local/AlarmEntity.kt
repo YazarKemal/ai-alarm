@@ -5,6 +5,7 @@ import androidx.room.PrimaryKey
 import com.kemalcetin.aialarm.domain.model.Alarm
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 
 @Entity(tableName = "alarms")
 data class AlarmEntity(
@@ -17,6 +18,7 @@ data class AlarmEntity(
     val vibrate: Boolean,
     val soundUri: String?,
     val snoozeMinutes: Int,
+    val oneTimeDate: LocalDate? = null,
     val createdAt: Instant,
     val updatedAt: Instant
 )
@@ -31,6 +33,7 @@ fun AlarmEntity.toDomain(): Alarm = Alarm(
     vibrate = vibrate,
     soundUri = soundUri,
     snoozeMinutes = snoozeMinutes,
+    oneTimeDate = oneTimeDate,
     createdAt = createdAt,
     updatedAt = updatedAt
 )
@@ -45,6 +48,7 @@ fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
     vibrate = vibrate,
     soundUri = soundUri,
     snoozeMinutes = snoozeMinutes,
+    oneTimeDate = oneTimeDate,
     createdAt = createdAt,
     updatedAt = updatedAt
 )

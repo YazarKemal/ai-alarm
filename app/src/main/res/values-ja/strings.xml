@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_description">アラームが鳴っている通知</string>
+    <string name="alarm_default_label">アラーム</string>
+    <string name="alarm_ringing">アラームが鳴っています</string>
+    <string name="snooze">スヌーズ</string>
+    <string name="dismiss">解除</string>
+
+    <!-- Home -->
+    <string name="home_title">Smart Alarm Clock</string>
+    <string name="next_alarm">次のアラーム</string>
+    <string name="no_alarm_yet">アラームはまだありません</string>
+    <string name="no_alarm_hint">+ をタップしてアラームを追加してください。</string>
+    <string name="alarms_section">アラーム</string>
+    <string name="one_time">一回</string>
+    <string name="add_alarm_desc">アラームを追加</string>
+    <string name="settings_desc">設定</string>
+    <string name="today">今日</string>
+    <string name="tomorrow">明日</string>
+    <string name="add_alarm">アラームを追加</string>
+    <string name="notification_banner">通知がオフです。全画面アラートが表示されない場合があります。</string>
+    <string name="exact_alarm_banner">信頼できるアラームには正確なアラームへのアクセスが必要です。</string>
+    <string name="fullscreen_banner">全画面アラームへのアクセスがオフです。</string>
+    <string name="allow">許可</string>
+    <string name="open_settings">設定</string>
+
+    <!-- AI suggestion -->
+    <string name="ph_ai_name">PromptHaven AI</string>
+    <string name="ignore">無視</string>
+    <string name="set_alarm">アラームを設定</string>
+
+    <!-- Clock -->
+    <string name="clock_style_title">時計のスタイル</string>
+    <string name="clock_style_digital_minimal">デジタル ミニマル</string>
+    <string name="clock_style_digital_bold">デジタル ボールド</string>
+    <string name="clock_style_digital_night">デジタル ナイト</string>
+    <string name="clock_style_analog_classic">アナログ クラシック</string>
+    <string name="clock_style_analog_minimal">アナログ ミニマル</string>
+    <string name="clock_style_analog_gold">アナログ ゴールド</string>
+
+    <!-- Editor -->
+    <string name="new_alarm">新しいアラーム</string>
+    <string name="edit_alarm">アラームを編集</string>
+    <string name="repeat">繰り返し</string>
+    <string name="label">ラベル</string>
+    <string name="alarm_label_hint">アラームのラベル</string>
+    <string name="alarm_sound">アラーム音</string>
+    <string name="vibration">バイブレーション</string>
+    <string name="vibration_subtitle">アラームと一緒に振動</string>
+    <string name="snooze_duration">スヌーズ</string>
+    <string name="snooze_minutes">分</string>
+    <string name="more_options">その他のオプション</string>
+    <string name="save_alarm">アラームを保存</string>
+    <string name="delete_alarm">アラームを削除</string>
+    <string name="set_with_ai">PromptHaven AIで設定</string>
+    <string name="set_with_ai_hint">アラームを自然言語で説明してください</string>
+    <string name="ai_understood">PromptHavenが理解しました</string>
+    <string name="apply_to_alarm">アラームに適用</string>
+    <string name="ready_to_apply">適用準備完了</string>
+    <string name="time_tap_hint">時間をタップして変更</string>
+    <string name="ok">OK</string>
+    <string name="cancel">キャンセル</string>
+
+    <!-- Ringing -->
+    <string name="snooze_action">10分スヌーズ</string>
+    <string name="hold_to_dismiss">長押しで解除</string>
+
+    <!-- Settings -->
+    <string name="settings_title">設定</string>
+    <string name="appearance">外観</string>
+    <string name="theme">テーマ</string>
+    <string name="system_default">システムのデフォルト</string>
+    <string name="light">ライト</string>
+    <string name="dark">ダーク</string>
+    <string name="alarm_defaults">アラームのデフォルト</string>
+    <string name="default_snooze">デフォルトのスヌーズ</string>
+    <string name="default_snooze_subtitle">スヌーズ時に使用する時間</string>
+    <string name="default_alarm_sound">デフォルトのアラーム音</string>
+    <string name="ph_ai_section">PROMPTHAVEN AI</string>
+    <string name="smart_suggestions">スマートなアラーム提案</string>
+    <string name="smart_suggestions_subtitle">忘れがちなアラームを提案</string>
+    <string name="ai_setup">AIアラーム設定</string>
+    <string name="ai_setup_subtitle">PromptHaven AIプロキシによる自然言語設定</string>
+    <string name="ai_setup_enabled">有効</string>
+    <string name="ai_setup_disabled">設定が必要</string>
+
+    <string name="planning_preferences">プランニング設定</string>
+    <string name="planning_preferences_subtitle">プラン用の睡眠・準備・通勤・バックアップの既定値</string>
+    <string name="open">開く</string>
+    <string name="save">保存</string>
+    <string name="decrease">減らす</string>
+    <string name="increase">増やす</string>
+    <string name="wake_preference">起床の好み</string>
+    <string name="wake_pref_latest">ぎりぎり</string>
+    <string name="wake_pref_balanced">バランス</string>
+    <string name="wake_pref_early">早め</string>
+    <string name="pre_alarm">やさしい予告アラーム</string>    <string name="alarm_reliability">アラームの信頼性</string>
+    <string name="exact_alarm_access">正確なアラームへのアクセス</string>
+    <string name="notifications">通知</string>
+    <string name="full_screen_alarms">全画面アラーム</string>
+    <string name="battery_optimization">バッテリー最適化</string>
+    <string name="status_allowed">許可済み</string>
+    <string name="status_action_needed">操作が必要</string>
+    <string name="status_optimized">最適化済み</string>
+    <string name="status_recommended">推奨</string>
+    <string name="about">情報</string>
+    <string name="privacy">プライバシー</string>
+    <string name="open_source_licenses">オープンソースライセンス</string>
+    <string name="ecosystem_footer">Smart Alarm Clock\nby PromptHaven Studio</string>
+    <string name="back">戻る</string>
+    <string name="ai_preview">AIプレビュー</string>
+    <string name="retry">再試行</string>
+    <string name="refine_request">リクエストを調整</string>
+    <string name="preview">プレビュー</string>
+
+    <string name="plan_header">PROMPTHAVEN プラン</string>
+    <string name="arrive_at">到着</string>
+    <string name="sleep_target">睡眠目標</string>
+    <string name="wake">起床</string>
+    <string name="leave_by">出発</string>
+    <string name="assumptions">前提条件</string>
+    <string name="create_plan">プランを作成</string>
+    <string name="edit_request">リクエストを編集</string>
+    <string name="clarification_placeholder">回答…</string>
+    <string name="send">送信</string>
+    <string name="sleep_shortfall_notice">睡眠は約%1$d分だけになり、目標より少なくなります。</string>
+    <string name="hours">時間</string>
+    <string name="minutes_short">分</string>
+    <string name="not_set">未設定</string>
+    <string name="commute">通勤</string>
+    <string name="buffer">余裕</string>
+    <string name="preparation">準備</string>
+    <string name="gentle_wake_up">やさしい起床</string>
+    <string name="backup_alarm">バックアップアラーム</string>
+    <string name="alarms">アラーム</string>
+    <!-- Language -->
+    <string name="language">言語</string>
+    <string name="language_dialog_title">言語を選択</string>
+
+    <!-- AI errors -->
+    <string name="ai_parse_error">そのリクエストを理解できませんでした。07:30のような時刻と曜日を試してください。</string>
+
+    <!-- Home AI suggestion -->
+    <string name="ai_suggestion_single">通常は%1$sにアラームを設定しています。明日のアラームは設定されていません。</string>
+    <string name="ai_suggestion_weekdays">通常は平日の%1$sにアラームを設定しています。明日のアラームは設定されていません。</string>
+    <string name="ai_suggestion_days">通常は%1$sに%2$sのアラームを設定しています。明日のアラームは設定されていません。</string>
+
+    <!-- Theme label -->
+    <string name="theme_auto">自動</string>
+    <string name="ai_clarification_commute_required">そこまで通常どれくらいかかりますか？</string>
+    <string name="ai_clarification_commute_minutes_required">移動時間を分で入力してもらえますか？例：60分。</string>
+</resources>

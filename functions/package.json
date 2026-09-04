@@ -1,0 +1,23 @@
+{
+  "name": "prompthaven-alarm-functions",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Server-side PromptHaven AI proxy for the PromptHaven Alarm app. Holds the AI provider key; the Android app never carries a provider secret.",
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "deploy": "npm run build && firebase deploy --only functions:alarm-ai --project prompthaven-646fe"
+  },
+  "dependencies": {
+    "firebase-functions": "^6.3.0",
+    "firebase-admin": "^12.7.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

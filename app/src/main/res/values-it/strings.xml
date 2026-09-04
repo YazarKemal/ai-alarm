@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_name">Smart Alarm Clock</string>
+    <string name="alarm_ringing_channel_description">Notifica di sveglia attiva in suoneria</string>
+    <string name="alarm_default_label">Sveglia</string>
+    <string name="alarm_ringing">La sveglia sta suonando</string>
+    <string name="snooze">Snooze</string>
+    <string name="dismiss">Ignora</string>
+
+    <!-- Home -->
+    <string name="home_title">Smart Alarm Clock</string>
+    <string name="next_alarm">Prossima sveglia</string>
+    <string name="no_alarm_yet">Nessuna sveglia</string>
+    <string name="no_alarm_hint">Tocca + per aggiungere una sveglia.</string>
+    <string name="alarms_section">SVEGLIE</string>
+    <string name="one_time">Una volta</string>
+    <string name="add_alarm_desc">Aggiungi sveglia</string>
+    <string name="settings_desc">Impostazioni</string>
+    <string name="today">Oggi</string>
+    <string name="tomorrow">Domani</string>
+    <string name="add_alarm">Aggiungi sveglia</string>
+    <string name="notification_banner">Le notifiche sono disattivate; gli avvisi a schermo intero potrebbero non apparire.</string>
+    <string name="exact_alarm_banner">Per sveglie affidabili è necessario l\'accesso alle sveglie esatte.</string>
+    <string name="fullscreen_banner">L\'accesso alla sveglia a schermo intero è disattivato.</string>
+    <string name="allow">Consenti</string>
+    <string name="open_settings">Impostazioni</string>
+
+    <!-- AI suggestion -->
+    <string name="ph_ai_name">PromptHaven AI</string>
+    <string name="ignore">IGNORA</string>
+    <string name="set_alarm">IMPOSTA SVEGLIA</string>
+
+    <!-- Clock -->
+    <string name="clock_style_title">Stile orologio</string>
+    <string name="clock_style_digital_minimal">Digitale minimalista</string>
+    <string name="clock_style_digital_bold">Digitale in grassetto</string>
+    <string name="clock_style_digital_night">Digitale notte</string>
+    <string name="clock_style_analog_classic">Analogico classico</string>
+    <string name="clock_style_analog_minimal">Analogico minimalista</string>
+    <string name="clock_style_analog_gold">Analogico dorato</string>
+
+    <!-- Editor -->
+    <string name="new_alarm">Nuova sveglia</string>
+    <string name="edit_alarm">Modifica sveglia</string>
+    <string name="repeat">Ripeti</string>
+    <string name="label">Etichetta</string>
+    <string name="alarm_label_hint">Etichetta sveglia</string>
+    <string name="alarm_sound">Suono della sveglia</string>
+    <string name="vibration">Vibrazione</string>
+    <string name="vibration_subtitle">Vibra con la sveglia</string>
+    <string name="snooze_duration">Snooze</string>
+    <string name="snooze_minutes">min</string>
+    <string name="more_options">Altre opzioni</string>
+    <string name="save_alarm">SALVA SVEGLIA</string>
+    <string name="delete_alarm">Elimina sveglia</string>
+    <string name="set_with_ai">Imposta con PromptHaven AI</string>
+    <string name="set_with_ai_hint">Descrivi la tua sveglia in linguaggio naturale</string>
+    <string name="ai_understood">PromptHaven ha capito</string>
+    <string name="apply_to_alarm">APPLICA ALLA SVEGLIA</string>
+    <string name="ready_to_apply">Pronto da applicare</string>
+    <string name="time_tap_hint">Tocca l\'ora per cambiarla</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Annulla</string>
+
+    <!-- Ringing -->
+    <string name="snooze_action">SNOOZE 10 MINUTI</string>
+    <string name="hold_to_dismiss">TIENI PREMUTO PER IGNORARE</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Impostazioni</string>
+    <string name="appearance">ASPETTO</string>
+    <string name="theme">Tema</string>
+    <string name="system_default">Predefinito di sistema</string>
+    <string name="light">Chiaro</string>
+    <string name="dark">Scuro</string>
+    <string name="alarm_defaults">IMPOSTAZIONI PREDEFINITE SVEGLIA</string>
+    <string name="default_snooze">Snooze predefinito</string>
+    <string name="default_snooze_subtitle">Durata usata allo snooze</string>
+    <string name="default_alarm_sound">Suono sveglia predefinito</string>
+    <string name="ph_ai_section">PROMPTHAVEN AI</string>
+    <string name="smart_suggestions">Suggerimenti intelligenti per le sveglie</string>
+    <string name="smart_suggestions_subtitle">Suggerisci sveglie probabilmente dimenticate</string>
+    <string name="ai_setup">Impostazione sveglia con IA</string>
+    <string name="ai_setup_subtitle">Impostazione in linguaggio naturale tramite il proxy PromptHaven AI</string>
+    <string name="ai_setup_enabled">Attivato</string>
+    <string name="ai_setup_disabled">Configurazione necessaria</string>
+
+    <string name="planning_preferences">Preferenze di pianificazione</string>
+    <string name="planning_preferences_subtitle">Valori predefiniti di sonno, preparazione, spostamento e backup per i piani</string>
+    <string name="open">Apri</string>
+    <string name="save">Salva</string>
+    <string name="decrease">Riduci</string>
+    <string name="increase">Aumenta</string>
+    <string name="wake_preference">Preferenza di sveglia</string>
+    <string name="wake_pref_latest">Il più tardi</string>
+    <string name="wake_pref_balanced">Bilanciato</string>
+    <string name="wake_pref_early">Presto</string>
+    <string name="pre_alarm">Pre-sveglia delicata</string>    <string name="alarm_reliability">AFFIDABILITÀ DELLA SVEGLIA</string>
+    <string name="exact_alarm_access">Accesso sveglie esatte</string>
+    <string name="notifications">Notifiche</string>
+    <string name="full_screen_alarms">Sveglie a schermo intero</string>
+    <string name="battery_optimization">Ottimizzazione batteria</string>
+    <string name="status_allowed">Consentito</string>
+    <string name="status_action_needed">Azione necessaria</string>
+    <string name="status_optimized">Ottimizzato</string>
+    <string name="status_recommended">Consigliato</string>
+    <string name="about">INFO</string>
+    <string name="privacy">Privacy</string>
+    <string name="open_source_licenses">Licenze open source</string>
+    <string name="ecosystem_footer">Smart Alarm Clock\nda PromptHaven Studio</string>
+    <string name="back">Indietro</string>
+    <string name="ai_preview">Anteprima IA</string>
+    <string name="retry">Riprova</string>
+    <string name="refine_request">Perfeziona richiesta</string>
+    <string name="preview">Anteprima</string>
+
+    <string name="plan_header">PIANO PROMPTHAVEN</string>
+    <string name="arrive_at">Arrivo alle</string>
+    <string name="sleep_target">Obiettivo sonno</string>
+    <string name="wake">Sveglia</string>
+    <string name="leave_by">Partenza alle</string>
+    <string name="assumptions">Presupposti</string>
+    <string name="create_plan">CREA PIANO</string>
+    <string name="edit_request">Modifica richiesta</string>
+    <string name="clarification_placeholder">La tua risposta…</string>
+    <string name="send">Invia</string>
+    <string name="sleep_shortfall_notice">Dormirai solo circa %1$d min — meno del tuo obiettivo.</string>
+    <string name="hours">h</string>
+    <string name="minutes_short">min</string>
+    <string name="not_set">Non impostato</string>
+    <string name="commute">Spostamento</string>
+    <string name="buffer">Margine</string>
+    <string name="preparation">Preparazione</string>
+    <string name="gentle_wake_up">Sveglia delicata</string>
+    <string name="backup_alarm">Sveglia di backup</string>
+    <string name="alarms">Sveglie</string>
+    <!-- Language -->
+    <string name="language">Lingua</string>
+    <string name="language_dialog_title">Scegli la lingua</string>
+
+    <!-- AI errors -->
+    <string name="ai_parse_error">Non ho capito questa richiesta. Prova un orario come 07:30 e un giorno.</string>
+
+    <!-- Home AI suggestion -->
+    <string name="ai_suggestion_single">Di solito imposti una sveglia alle %1$s. Nessuna sveglia è impostata per domani.</string>
+    <string name="ai_suggestion_weekdays">Di solito imposti una sveglia alle %1$s nei giorni feriali. Nessuna sveglia è impostata per domani.</string>
+    <string name="ai_suggestion_days">Di solito imposti una sveglia alle %1$s il %2$s. Nessuna sveglia è impostata per domani.</string>
+
+    <!-- Theme label -->
+    <string name="theme_auto">Automatico</string>
+    <string name="ai_clarification_commute_required">Quanto tempo impieghi di solito ad arrivare?</string>
+    <string name="ai_clarification_commute_minutes_required">Puoi scrivere il tempo di viaggio in minuti? Per esempio: 60 minuti.</string>
+</resources>

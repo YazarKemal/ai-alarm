@@ -23,6 +23,19 @@ class NextAlarmCalculator(
     fun nextTrigger(alarm: Alarm, from: ZonedDateTime): ZonedDateTime? {
         if (!alarm.enabled) return null
 
+        // An explicitly pinned one-time date is absolute: combine it with the
+        // hour/minute in the device time zone and never shift it forward. If it
+        // is no longer in the future the alarm simply has no next trigger.
+        alarm.oneTimeDate?.let { date ->
+            val at = from
+                .with(date)
+                .withHour(alarm.hour)
+                .withMinute(alarm.minute)
+                .withSecond(0)
+                .withNano(0)
+            return if (at.isAfter(from)) at else null
+        }
+
         val candidate = from
             .withHour(alarm.hour)
             .withMinute(alarm.minute)
@@ -30,6 +43,7 @@ class NextAlarmCalculator(
             .withNano(0)
 
         return if (alarm.repeatDays.isEmpty()) {
+            // Legacy one-time alarm without an explicit date: roll to tomorrow.
             if (candidate.isAfter(from)) candidate else candidate.plusDays(1)
         } else {
             var occurrence = candidate

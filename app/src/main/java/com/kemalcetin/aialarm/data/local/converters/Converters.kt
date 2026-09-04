@@ -3,6 +3,7 @@ package com.kemalcetin.aialarm.data.local.converters
 import androidx.room.TypeConverter
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 
 class Converters {
 
@@ -23,4 +24,10 @@ class Converters {
 
     @TypeConverter
     fun toInstant(value: Long?): Instant? = value?.let(Instant::ofEpochMilli)
+
+    @TypeConverter
+    fun fromLocalDate(date: LocalDate?): String? = date?.toString() // ISO-8601 yyyy-MM-dd
+
+    @TypeConverter
+    fun toLocalDate(value: String?): LocalDate? = value?.let(LocalDate::parse)
 }

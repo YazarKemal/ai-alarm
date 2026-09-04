@@ -1,12 +1,23 @@
 package com.kemalcetin.aialarm.ui.settings
 
+import android.content.Context
+import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.kemalcetin.aialarm.core.locale.AppLanguage
+import com.kemalcetin.aialarm.core.locale.AppLanguageManager
+import com.kemalcetin.aialarm.core.permission.BatteryOptimizationManager
+import com.kemalcetin.aialarm.core.planning.AiPlanningPreferences
+import com.kemalcetin.aialarm.core.permission.ExactAlarmPermissionManager
+import com.kemalcetin.aialarm.core.permission.FullScreenIntentPermissionManager
+import com.kemalcetin.aialarm.core.permission.NotificationPermissionManager
 import com.kemalcetin.aialarm.data.prefs.AppPreferences
 import com.kemalcetin.aialarm.di.AppContainer
+import com.kemalcetin.aialarm.ui.clock.ClockStyle
+import com.kemalcetin.aialarm.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -16,36 +27,94 @@ import kotlinx.coroutines.launch
 
 data class SettingsUiState(
     val defaultSnoozeMinutes: Int = AppPreferences.DEFAULT_SNOOZE,
-    val autoCreateEnabled: Boolean = true,
-    val deepSeekConfigured: Boolean = false
+    val smartSuggestionsEnabled: Boolean = true,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val clockStyle: ClockStyle = AppPreferences.DEFAULT_CLOCK_STYLE,
+    val language: AppLanguage = AppLanguage.default,
+    val planningPreferences: AiPlanningPreferences = AiPlanningPreferences(),
+    val exactAlarmAllowed: Boolean = true,
+    val notificationsGranted: Boolean = true,
+    val fullScreenAvailable: Boolean = true,
+    val batteryOptimized: Boolean = false,
+    val appVersion: String = ""
 )
 
 class SettingsViewModel(
     private val preferences: AppPreferences,
-    private val deepSeekConfigured: Boolean
+    private val appLanguageManager: AppLanguageManager,
+    private val exactPermission: ExactAlarmPermissionManager,
+    private val notificationPermission: NotificationPermissionManager,
+    private val fullScreenPermission: FullScreenIntentPermissionManager,
+    private val batteryOptimization: BatteryOptimizationManager,
+    private val appVersion: String
 ) : ViewModel() {
 
     val uiState: StateFlow<SettingsUiState> = combineSettings()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            SettingsUiState(appVersion = appVersion)
+        )
 
-    private fun combineSettings(): Flow<SettingsUiState> =
-        combine(
+    /**
+     * Combines the setting flows into one UI state. `combine` is arity-limited to
+     * 5 typed flows, so the four stateless flows are folded first, then merged
+     * with the language + planning preference flows (which need resolving).
+     */
+    private fun combineSettings(): Flow<SettingsUiState> {
+        val base = combine(
             preferences.defaultSnoozeMinutes,
-            preferences.autoCreateEnabled
-        ) { snooze, autoCreate ->
+            preferences.autoCreateEnabled,
+            preferences.themeMode,
+            preferences.clockStyle
+        ) { snooze, autoCreate, theme, clock ->
             SettingsUiState(
                 defaultSnoozeMinutes = snooze,
-                autoCreateEnabled = autoCreate,
-                deepSeekConfigured = deepSeekConfigured
+                smartSuggestionsEnabled = autoCreate,
+                themeMode = theme,
+                clockStyle = clock
             )
         }
+        return combine(base, preferences.selectedLanguageTag, preferences.aiPlanningPreferences) { state, languageTag, planning ->
+            state.copy(
+                language = AppLanguage.resolve(languageTag),
+                planningPreferences = planning,
+                exactAlarmAllowed = exactPermission.canScheduleExactAlarms(),
+                notificationsGranted = notificationPermission.isGranted(),
+                fullScreenAvailable = fullScreenPermission.canUseFullScreenIntent(),
+                batteryOptimized = batteryOptimization.isIgnoringBatteryOptimizations(),
+                appVersion = appVersion
+            )
+        }
+    }
 
     fun setDefaultSnooze(minutes: Int) {
         viewModelScope.launch { preferences.setDefaultSnooze(minutes) }
     }
 
-    fun setAutoCreateEnabled(enabled: Boolean) {
+    fun setSmartSuggestionsEnabled(enabled: Boolean) {
         viewModelScope.launch { preferences.setAutoCreateEnabled(enabled) }
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        viewModelScope.launch { preferences.setThemeMode(mode) }
+    }
+
+    fun setClockStyle(style: ClockStyle) {
+        viewModelScope.launch { preferences.setClockStyle(style) }
+    }
+
+    /**
+     * Changes the application language. The manager updates the in-memory value
+     * and default Locale synchronously (so an immediate activity recreation shows
+     * the new language) and persists the selection in the background.
+     */
+    fun setLanguage(language: AppLanguage) {
+        appLanguageManager.setLanguage(language)
+    }
+
+    fun setAiPlanningPreferences(planning: AiPlanningPreferences) {
+        viewModelScope.launch { preferences.setAiPlanningPreferences(planning) }
     }
 
     companion object {
@@ -53,9 +122,20 @@ class SettingsViewModel(
             initializer {
                 SettingsViewModel(
                     preferences = container.appPreferences,
-                    deepSeekConfigured = container.aiInsightsProvider != null
+                    appLanguageManager = container.appLanguageManager,
+                    exactPermission = container.exactAlarmPermissionManager,
+                    notificationPermission = container.notificationPermissionManager,
+                    fullScreenPermission = container.fullScreenIntentPermissionManager,
+                    batteryOptimization = container.batteryOptimizationManager,
+                    appVersion = readVersionName(container.appContext)
                 )
             }
+        }
+
+        private fun readVersionName(context: Context): String = try {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""
+        } catch (e: PackageManager.NameNotFoundException) {
+            ""
         }
     }
 }

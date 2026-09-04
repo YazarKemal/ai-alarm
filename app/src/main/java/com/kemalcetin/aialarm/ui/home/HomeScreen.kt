@@ -3,8 +3,6 @@ package com.kemalcetin.aialarm.ui.home
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,24 +17,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Alarm
-import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,30 +33,37 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.kemalcetin.aialarm.BuildConfig
+import com.kemalcetin.aialarm.R
 import com.kemalcetin.aialarm.core.alarm.NextAlarmCalculator
 import com.kemalcetin.aialarm.di.AppContainer
 import com.kemalcetin.aialarm.domain.model.Alarm
+import com.kemalcetin.aialarm.feature.assistant.learning.ExpectedSlot
+import com.kemalcetin.aialarm.ui.clock.ClockWidget
 import com.kemalcetin.aialarm.ui.common.formatRepeatDays
 import com.kemalcetin.aialarm.ui.common.formatTime
+import com.kemalcetin.aialarm.ui.components.PhAiSuggestionCard
+import com.kemalcetin.aialarm.ui.components.PhAlarmCard
+import com.kemalcetin.aialarm.ui.components.PhTopBar
+import com.kemalcetin.aialarm.ui.theme.PhRadius
+import com.kemalcetin.aialarm.ui.theme.PhSpacing
+import java.time.DayOfWeek
 import java.time.ZonedDateTime
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     container: AppContainer,
     onAddAlarm: () -> Unit,
     onEditAlarm: (Long) -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onSetSuggestion: (ExpectedSlot) -> Unit
 ) {
     val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(container))
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -82,13 +78,6 @@ fun HomeScreen(
         onPauseOrDispose { }
     }
 
-    val nextAlarm = remember(uiState.alarms) {
-        val calc = NextAlarmCalculator()
-        uiState.alarms
-            .mapNotNull { calc.nextTrigger(it) }
-            .minByOrNull { it.toEpochSecond() }
-    }
-
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
@@ -97,7 +86,7 @@ fun HomeScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add alarm")
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_alarm_desc))
             }
         }
     ) { padding ->
@@ -108,26 +97,28 @@ fun HomeScreen(
             contentPadding = PaddingValues(bottom = 96.dp)
         ) {
             item {
-                HomeHeader(
-                    alarmCount = uiState.alarms.count { it.enabled },
-                    onOpenSettings = onOpenSettings
+                PhTopBar(
+                    title = stringResource(R.string.home_title),
+                    onSettings = onOpenSettings
                 )
             }
 
             item {
-                NextAlarmHero(
-                    nextAlarm = nextAlarm,
-                    enabledCount = uiState.alarms.count { it.enabled },
-                    onAddAlarm = onAddAlarm
+                ClockCard(
+                    clock = uiState.clockStyle,
+                    nextAlarm = uiState.nextAlarm
                 )
             }
 
-            item {
-                AiAssistantCard(
-                    autoCreateEnabled = uiState.aiAutoCreateEnabled,
-                    lastAutoCreate = viewModel.formatAiLastAutoCreate(uiState.aiLastAutoCreateTime),
-                    onToggle = viewModel::setAiAutoCreateEnabled
-                )
+            uiState.aiSuggestion?.let { slot ->
+                item {
+                    PhAiSuggestionCard(
+                        message = suggestionMessage(slot),
+                        onSetAlarm = { onSetSuggestion(slot) },
+                        onIgnore = { viewModel.dismissSuggestion(slot) },
+                        modifier = Modifier.padding(horizontal = PhSpacing.lg, vertical = PhSpacing.sm)
+                    )
+                }
             }
 
             item {
@@ -145,18 +136,24 @@ fun HomeScreen(
                 )
             }
 
-            item { SectionTitle("ALARMS") }
+            item {
+                Text(
+                    text = stringResource(R.string.alarms_section),
+                    modifier = Modifier.padding(start = PhSpacing.xl, top = PhSpacing.section, bottom = PhSpacing.sm),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
             if (uiState.alarms.isEmpty()) {
-                item {
-                    EmptyAlarms(onAddAlarm = onAddAlarm)
-                }
+                item { EmptyAlarms(onAddAlarm = onAddAlarm) }
             } else {
                 items(uiState.alarms, key = { it.id }) { alarm ->
-                    AlarmRow(
+                    PhAlarmCard(
                         alarm = alarm,
                         onClick = { onEditAlarm(alarm.id) },
-                        onToggle = { enabled -> viewModel.setAlarmEnabled(alarm, enabled) }
+                        onToggle = { enabled -> viewModel.setAlarmEnabled(alarm, enabled) },
+                        modifier = Modifier.padding(horizontal = PhSpacing.lg, vertical = 6.dp)
                     )
                 }
             }
@@ -165,220 +162,84 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeHeader(
-    alarmCount: Int,
-    onOpenSettings: () -> Unit
+private fun ClockCard(
+    clock: com.kemalcetin.aialarm.ui.clock.ClockStyle,
+    nextAlarm: ZonedDateTime?
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 24.dp, end = 12.dp, top = 20.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(
-                text = "AI Alarm",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = if (alarmCount > 0) {
-                    "$alarmCount aktif alarm"
-                } else {
-                    "Bir alarm kur"
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        IconButton(onClick = onOpenSettings) {
-            Icon(
-                Icons.Outlined.Settings,
-                contentDescription = "Settings",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun NextAlarmHero(
-    nextAlarm: ZonedDateTime?,
-    enabledCount: Int,
-    onAddAlarm: () -> Unit
-) {
-    val gradient = Brush.linearGradient(
-        listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.tertiary
-        )
-    )
+    val todayText = stringResource(R.string.today)
+    val tomorrowText = stringResource(R.string.tomorrow)
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+            .padding(horizontal = PhSpacing.lg, vertical = PhSpacing.sm),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(PhRadius.cardHero),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(gradient, RoundedCornerShape(28.dp))
-                .padding(24.dp)
+                .padding(vertical = PhSpacing.xxl),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Outlined.Schedule,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "SIRADAKİ ALARM",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
-                    )
-                }
-                Spacer(Modifier.height(16.dp))
-                if (nextAlarm != null) {
-                    Text(
-                        text = formatTime(nextAlarm.hour, nextAlarm.minute),
-                        style = MaterialTheme.typography.displayLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = formatNextAlarmDate(nextAlarm),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.92f)
-                    )
-                } else if (enabledCount > 0) {
-                    Text(
-                        text = "—",
-                        style = MaterialTheme.typography.displayLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text(
-                        text = "Alarm yok",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(Modifier.height(6.dp))
-                    Text(
-                        text = "Yeni bir alarm eklemek için + butonuna dokun.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    TextButton(
-                        onClick = onAddAlarm,
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        Text(
-                            "Alarm Ekle",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            }
+            ClockWidget(
+                style = clock,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                nextAlarmText = nextAlarm?.let { nextAlarmSummary(it, todayText, tomorrowText) }
+            )
         }
     }
 }
 
-private fun formatNextAlarmDate(next: ZonedDateTime): String {
-    val today = ZonedDateTime.now().toLocalDate()
-    val label = when (next.toLocalDate()) {
-        today -> "Bugün"
-        today.plusDays(1) -> "Yarın"
-        else -> "${next.monthValue}/${next.dayOfMonth}"
+@Composable
+private fun PermissionBanners(
+    permissions: PermissionStatus,
+    onRequestNotifications: () -> Unit,
+    onOpenExactAlarmSettings: () -> Unit,
+    onOpenFullScreenSettings: () -> Unit
+) {
+    if (!permissions.notificationsGranted) {
+        PermissionBanner(stringResource(R.string.notification_banner)) {
+            TextButton(onClick = onRequestNotifications) { Text(stringResource(R.string.allow)) }
+        }
     }
-    return "$label · ${formatTime(next.hour, next.minute)}"
+    if (!permissions.canScheduleExact) {
+        PermissionBanner(stringResource(R.string.exact_alarm_banner)) {
+            TextButton(onClick = onOpenExactAlarmSettings) { Text(stringResource(R.string.open_settings)) }
+        }
+    }
+    if (!permissions.fullScreenAvailable) {
+        PermissionBanner(stringResource(R.string.fullscreen_banner)) {
+            TextButton(onClick = onOpenFullScreenSettings) { Text(stringResource(R.string.open_settings)) }
+        }
+    }
 }
 
 @Composable
-private fun AiAssistantCard(
-    autoCreateEnabled: Boolean,
-    lastAutoCreate: String,
-    onToggle: (Boolean) -> Unit
-) {
+private fun PermissionBanner(message: String, action: @Composable () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(20.dp),
+            .padding(horizontal = PhSpacing.lg, vertical = 6.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(PhRadius.card),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
+            containerColor = MaterialTheme.colorScheme.errorContainer
         )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(start = PhSpacing.lg, end = PhSpacing.sm, top = PhSpacing.sm, bottom = PhSpacing.sm),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                Modifier
-                    .size(44.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                        CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.Outlined.AutoAwesome,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-            Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = "AI Assistant",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-                Text(
-                    text = if (autoCreateEnabled) {
-                        "Unutulan tekrarlı alarmları otomatik kurar."
-                    } else {
-                        "Otomatik kurma kapalı."
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
-                )
-                if (autoCreateEnabled && lastAutoCreate != "—") {
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = "Son kurulum: $lastAutoCreate",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.tertiary
-                    )
-                }
-            }
-            Spacer(Modifier.width(12.dp))
-            Switch(checked = autoCreateEnabled, onCheckedChange = onToggle)
+            Text(
+                text = message,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
+            action()
         }
     }
-}
-
-@Composable
-private fun SectionTitle(title: String) {
-    Text(
-        text = title,
-        modifier = Modifier.padding(start = 24.dp, top = 20.dp, bottom = 8.dp),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary
-    )
 }
 
 @Composable
@@ -396,151 +257,44 @@ private fun EmptyAlarms(onAddAlarm: () -> Unit) {
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(PhSpacing.lg))
             Text(
-                text = "Henüz alarm yok",
+                text = stringResource(R.string.no_alarm_yet),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(PhSpacing.xs))
             Text(
-                text = "Bir alarm eklemek için aşağıdaki butonu kullan.",
+                text = stringResource(R.string.no_alarm_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                 textAlign = TextAlign.Center
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(PhSpacing.sm))
             TextButton(onClick = onAddAlarm) {
-                Text("Alarm Ekle", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.add_alarm), fontWeight = FontWeight.SemiBold)
             }
         }
     }
 }
 
-@Composable
-private fun PermissionBanners(
-    permissions: PermissionStatus,
-    onRequestNotifications: () -> Unit,
-    onOpenExactAlarmSettings: () -> Unit,
-    onOpenFullScreenSettings: () -> Unit
-) {
-    if (!permissions.notificationsGranted) {
-        Banner("Bildirim izni kapalı; tam ekran uyarı gösterilemeyebilir.") {
-            TextButton(onClick = onRequestNotifications) { Text("İzin Ver") }
-        }
+private fun nextAlarmSummary(next: ZonedDateTime, todayText: String, tomorrowText: String): String {
+    val today = ZonedDateTime.now().toLocalDate()
+    val label = when (next.toLocalDate()) {
+        today -> todayText
+        today.plusDays(1) -> tomorrowText
+        else -> "${next.monthValue}/${next.dayOfMonth}"
     }
-    if (!permissions.canScheduleExact) {
-        Banner("Güvenilir alarmlar için tam zaman izni gerekli.") {
-            TextButton(onClick = onOpenExactAlarmSettings) { Text("Ayarlar") }
-        }
-    }
-    if (!permissions.fullScreenAvailable) {
-        Banner("Tam ekran alarm erişimi kapalı.") {
-            TextButton(onClick = onOpenFullScreenSettings) { Text("Ayarlar") }
-        }
-    }
+    return "$label · ${formatTime(next.hour, next.minute)}"
 }
 
 @Composable
-internal fun Banner(message: String, action: @Composable () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = message,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onErrorContainer
-            )
-            action()
-        }
-    }
-}
-
-@Composable
-private fun AlarmRow(
-    alarm: Alarm,
-    onClick: () -> Unit,
-    onToggle: (Boolean) -> Unit
-) {
-    val emphasis = if (alarm.enabled) 1f else 0.5f
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (alarm.enabled) 2.dp else 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                Modifier
-                    .size(46.dp)
-                    .background(
-                        if (alarm.enabled) {
-                            MaterialTheme.colorScheme.primaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        },
-                        RoundedCornerShape(14.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.Outlined.Alarm,
-                    contentDescription = null,
-                    tint = if (alarm.enabled) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = formatTime(alarm.hour, alarm.minute),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = emphasis)
-                )
-                Text(
-                    text = alarm.label.ifBlank { "Alarm" },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = emphasis)
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = if (alarm.isOneTime) "Bir kez" else formatRepeatDays(alarm.repeatDays),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = emphasis)
-                )
-            }
-            Switch(
-                checked = alarm.enabled,
-                onCheckedChange = onToggle
-            )
-        }
+private fun suggestionMessage(slot: ExpectedSlot): String {
+    val days = slot.repeatDays
+    val time = formatTime(slot.hour, slot.minute)
+    return when {
+        days.isEmpty() -> stringResource(R.string.ai_suggestion_single, time)
+        days.size >= 5 -> stringResource(R.string.ai_suggestion_weekdays, time)
+        else -> stringResource(R.string.ai_suggestion_days, time, formatRepeatDays(days))
     }
 }
