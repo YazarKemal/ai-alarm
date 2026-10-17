@@ -80,7 +80,8 @@ never mutates the recurring configuration.
 
 | Permission | Why |
 | --- | --- |
-| `SCHEDULE_EXACT_ALARM` | Schedule exact alarms (Android 12+). The app checks `AlarmManager.canScheduleExactAlarms()` and degrades gracefully if revoked. |
+| `USE_EXACT_ALARM` | Auto-granted for alarm-clock apps on Android 13+ (API 33+). The app checks `AlarmManager.canScheduleExactAlarms()` and degrades gracefully if unavailable. |
+| `SCHEDULE_EXACT_ALARM` (maxSdk 32) | Backward compatibility for Android 12 / 12L (API 31-32), where `USE_EXACT_ALARM` does not exist. Scoped with `maxSdkVersion=32` so it is not declared on Android 14+. |
 | `POST_NOTIFICATIONS` | Show the ringing notification (Android 13+ runtime permission). |
 | `USE_FULL_SCREEN_INTENT` | Launch the full-screen ringing activity. On Android 14+ the user can revoke this; capability is checked before use. |
 | `RECEIVE_BOOT_COMPLETED` | Reschedule enabled alarms after reboot. |
@@ -88,13 +89,16 @@ never mutates the recurring configuration.
 | `FOREGROUND_SERVICE_MEDIA_PLAYBACK` | Required subtype for audible playback foreground services on Android 14+. |
 | `VIBRATE` | Vibrate when the alarm fires. |
 
-### Note on `USE_EXACT_ALARM`
+### Exact-alarm strategy
 
-Because AI Alarm is a genuine alarm-clock application, before a Play Store
-release we may evaluate `USE_EXACT_ALARM` (a stronger, policy-restricted
-permission) in place of `SCHEDULE_EXACT_ALARM`, subject to current Google Play
-policy. That decision is isolated in
-`core/permission/ExactAlarmPermissionManager.kt` so it is trivial to change.
+AI Alarm is a genuine alarm-clock app, so it uses the Play-recommended
+`USE_EXACT_ALARM` permission on Android 13+ (API 33+), which is auto-granted and
+non-revocable. For Android 12 / 12L (API 31-32) — where `USE_EXACT_ALARM` does
+not exist — it keeps `SCHEDULE_EXACT_ALARM` scoped via `maxSdkVersion="32"`.
+Scheduling always uses `AlarmManager.setAlarmClock()`, which is exempt from the
+exact-alarm permission, so the permission settings flow is only surfaced on
+API 31-32. The decision is isolated in
+`core/permission/ExactAlarmPermissionManager.kt`.
 
 ## Running locally
 
@@ -103,9 +107,34 @@ Requirements: JDK 17+ (21 works), Android SDK with a recent platform.
 ```bash
 ./gradlew test            # unit tests
 ./gradlew assembleDebug   # debug APK
+./gradlew bundleRelease   # release AAB
 ```
 
-The debug APK is written to `app/build/outputs/apk/debug/`.
+The debug APK is written to `app/build/outputs/apk/debug/`. The release AAB is
+written to `app/build/outputs/bundle/release/`.
+
+## Release build & signing
+
+Signing credentials are **never** stored in the repository. To sign a release,
+create a gitignored `keystore.properties` in the project root (or export the
+same keys as environment variables):
+
+```properties
+RELEASE_STORE_FILE=C:/path/to/upload.keystore
+RELEASE_STORE_PASSWORD=********
+RELEASE_KEY_ALIAS=upload
+RELEASE_KEY_PASSWORD=********
+```
+
+If no credentials are present, `bundleRelease` / `assembleRelease` **fails**
+with a clear error before producing an unsigned artifact; debug and unit-test
+builds are unaffected. Upload the signed AAB to Google Play Console using Play
+App Signing (provide your upload keystore there; Google Play then manages the
+app signing key).
+
+The local `DEEPSEEK_API_KEY` (optional, for testing the AI assistant) is read
+from `local.properties` and compiled **only** into debug builds; release builds
+never embed a developer key and fall back to on-device heuristics.
 
 ## Testing alarms
 

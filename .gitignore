@@ -17,6 +17,13 @@ local.properties
 *.dex
 output.json
 
+# Signing & secrets (never commit)
+keystore.properties
+*.jks
+*.jks.key
+*.keystore
+*.p12
+
 # OS
 .DS_Store
 
